@@ -12,8 +12,8 @@ class Category(Base, BaseNestedSets):
     __tablename__ = 'category'
 
     id = Column(Integer, primary_key=True)
-    slug = Column(String(255), unique=True)
-    title = Column(String(255))
+    slug = Column(String(255), unique=True, nullable=False)
+    title = Column(String(255), nullable=False)
 
     def __repr__(self):
-        return f'<Category(slug={self.slug}, title={self.title})'
+        return '<Category(slug=%s, title=%s)' % (self.slug, self.title)
