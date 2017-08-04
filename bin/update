@@ -1,0 +1,8 @@
+#!/bin/bash
+
+PROJECT_ROOT=$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )
+
+source $PROJECT_ROOT/env/bin/activate
+rm -rf $PROJECT_ROOT/bin/src/*
+pip3 install -U -r $PROJECT_ROOT/requirements.txt
+echo -e "\e[1mPackages has been successfully updated.\e[0m"
