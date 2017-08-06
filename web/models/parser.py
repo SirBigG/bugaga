@@ -16,8 +16,8 @@ class ParserMap(Base):
     type = Column(Integer, nullable=False)
 
 
-class ParsedData(Base):
-    __tablename__ = 'parseddata'
+class ParsedItem(Base):
+    __tablename__ = 'parseditem'
 
     id = Column(Integer, primary_key=True)
     data = Column(JSON, nullable=False)
