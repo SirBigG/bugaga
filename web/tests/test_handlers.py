@@ -11,6 +11,8 @@ from web.models.category import Category
 
 TEST_HTML = '<head><title>Title</title></head><body><div class="container">' \
             '<div class="item"><a href="http://test.com/item1">Title item</a>' \
+            '<div class="content">Content</div></div>' \
+            '<div class="item"><a href="http://test.com/item1">Title item</a>' \
             '<div class="content">Content</div></div></div></body>'
 
 
@@ -20,7 +22,7 @@ class ParserHandlerTests(unittest.TestCase):
         Session = sessionmaker(self.engine)
         self.session = Session()
         Base.metadata.create_all(self.engine)
-        self.category = ParserMap(slug='category', title=Category)
+        self.category = Category(slug='category', title='Category')
         self.session.add(self.category)
         self.session.commit()
 

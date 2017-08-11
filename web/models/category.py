@@ -16,4 +16,4 @@ class Category(Base, BaseNestedSets):
     title = Column(String(255), nullable=False)
 
     def __repr__(self):
-        return '<Category(slug=%s, title=%s)' % (self.slug, self.title)
+        return f'<Category(slug={self.slug}, title={self.title})'
