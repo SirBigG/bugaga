@@ -3,7 +3,7 @@ import logging
 
 DEBUG_LEVEL = logging.basicConfig(level=logging.DEBUG)
 
-HOST = "localhost"
+HOST = "0.0.0.0"
 PORT = 8888
 
 DB_HOST = "localhost"

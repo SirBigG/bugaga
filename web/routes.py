@@ -2,6 +2,6 @@
 from web.views.IndexView import IndexView
 
 
-ROUTES = (
-    ("GET", "/", IndexView),
+ROUTES_GET = (
+    ("/", IndexView),
 )

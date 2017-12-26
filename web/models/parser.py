@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, JSON
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, JSON, Boolean
 
 Base = declarative_base()
 
@@ -10,10 +10,15 @@ class ParserMap(Base):
     __tablename__ = 'parsermap'
 
     id = Column(Integer, primary_key=True)
-    category_id = Column(Integer, ForeignKey('category.id'), nullable=False)
+    category_id = Column(Integer, ForeignKey('сategory.id'), nullable=False)
     link = Column(String, nullable=False)
-    map = Column(String, nullable=False)
+    map = Column(JSON, nullable=False)
+    root = Column(String(256))
     type = Column(Integer, nullable=False)
+    last_crawling = Column(DateTime)
+    period = Column(Integer, nullable=False)
+    period_type = Column(String(25), nullable=False)
+    is_active = Column(Boolean, default=True)
 
 
 class ParsedItem(Base):

@@ -1,0 +1,9 @@
+version: '2'
+
+services:
+  core:
+    build: .
+    volumes:
+       - .:/web
+    ports:
+      - 8888:8888

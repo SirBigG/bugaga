@@ -3,10 +3,8 @@ import unittest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from web.handlers import ParseHandler
-
-from web.models.parser import Base, ParserMap
-from web.models.category import Category
+from web.models.parser import Base
+from web.models.category import Category, Base as CategoryBase
 
 
 TEST_HTML = '<head><title>Title</title></head><body><div class="container">' \
@@ -19,8 +17,9 @@ class ParserHandlerTests(unittest.TestCase):
         self.engine = create_engine('sqlite:///:memory:')
         Session = sessionmaker(self.engine)
         self.session = Session()
+        CategoryBase.metadata.create_all(self.engine)
         Base.metadata.create_all(self.engine)
-        self.category = ParserMap(slug='category', title=Category)
+        self.category = Category(slug='category', title='Category')
         self.session.add(self.category)
         self.session.commit()
 

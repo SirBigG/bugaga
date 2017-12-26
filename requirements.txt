@@ -1,4 +1,6 @@
-aiohttp==2.2.5
-SQLAlchemy==1.1.13
+aiohttp==2.3.6
+SQLAlchemy==1.1.15
 psycopg2==2.7.3
-sqlalchemy-mptt==0.2.1
+sqlalchemy-mptt==0.2.2
+lxml
+factory_boy

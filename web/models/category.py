@@ -1,6 +1,5 @@
-
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Boolean
 
 from sqlalchemy_mptt.mixins import BaseNestedSets
 
@@ -14,6 +13,7 @@ class Category(Base, BaseNestedSets):
     id = Column(Integer, primary_key=True)
     slug = Column(String(255), unique=True, nullable=False)
     title = Column(String(255), nullable=False)
+    is_active = Column(Boolean, default=True)
 
     def __repr__(self):
-        return '<Category(slug=%s, title=%s)' % (self.slug, self.title)
+        return f'<Category(slug={self.slug}, title={self.title})>'
