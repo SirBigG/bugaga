@@ -4,3 +4,4 @@ psycopg2==2.7.3
 sqlalchemy-mptt==0.2.2
 lxml
 factory_boy
+requests

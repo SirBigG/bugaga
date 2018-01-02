@@ -4,10 +4,9 @@ import asyncio
 
 from aiohttp import web
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
 from web import routes
+
+import db
 
 from settings import settings
 
@@ -15,8 +14,8 @@ from settings import settings
 class Application(object):
     def __init__(self, loop=None):
         self.app = web.Application(loop=loop or asyncio.get_event_loop())
-        self.engine = create_engine("postgresql://%s:%s@%s/%s" % settings.DB_SETTINGS)
-        self.session = sessionmaker(bind=self.engine)
+        self.engine = db.Engine
+        self.session = db.Session
 
     def start(self):
         for route in routes.ROUTES_GET:

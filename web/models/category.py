@@ -1,10 +1,9 @@
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy.orm import relationship
 
 from sqlalchemy_mptt.mixins import BaseNestedSets
 
-
-Base = declarative_base()
+from .base import Base
 
 
 class Category(Base, BaseNestedSets):
@@ -14,6 +13,8 @@ class Category(Base, BaseNestedSets):
     slug = Column(String(255), unique=True, nullable=False)
     title = Column(String(255), nullable=False)
     is_active = Column(Boolean, default=True)
+    ParserMapR = relationship('ParserMap', backref='category.id')
+    ParsedItemR = relationship('ParsedItem', backref='category.id')
 
     def __repr__(self):
         return f'<Category(slug={self.slug}, title={self.title})>'

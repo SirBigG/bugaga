@@ -1,44 +1,35 @@
+import json
 import unittest
-
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from unittest import mock
 
 from web.models.parser import Base
 from web.models.category import Category, Base as CategoryBase
 
+from .factories import CategoryFactory, ParserMapFactory
+from .utils import MockResponse
+from .common import Session
+from .constants import TEST_HTML
 
-TEST_HTML = '<head><title>Title</title></head><body><div class="container">' \
-            '<div class="item"><a href="http://test.com/item1">Title item</a>' \
-            '<div class="content">Content</div></div>' \
-            '<div class="item"><a href="http://test.com/item1">Title item</a>' \
-            '<div class="content">Content</div></div></div></body>'
+from parser.handlers import ParseHandler
+
+from web.models.parser import ParsedItem
 
 
 class ParserHandlerTests(unittest.TestCase):
     def setUp(self):
-        self.engine = create_engine('sqlite:///:memory:')
-        Session = sessionmaker(self.engine)
         self.session = Session()
-        CategoryBase.metadata.create_all(self.engine)
-        Base.metadata.create_all(self.engine)
-        self.category = Category(slug='category', title='Category')
-        self.session.add(self.category)
-        self.session.commit()
 
     def tearDown(self):
-        Base.metadata.drop_all(self.engine)
+        self.session.rollback()
+        Session.remove()
 
-    def test_fetch_data(self):
-        pass
-
-    def test_parse_data(self):
-        pass
-
-    def test_is_new(self):
-        pass
-
-    def test_create_item(self):
-        pass
-
-    def test_send_to_channels(self):
-        pass
+    @mock.patch('requests.get', return_value=MockResponse(TEST_HTML))
+    def test_create_items(self, mock_response):
+        category = CategoryFactory()
+        map_ = ParserMapFactory(is_active=True, map=json.dumps({"title": './/div[@class="content"]/text()',
+                                                                "link": './/a/@href'}),
+                                root='//div[@class="item"]',
+                                category_id=category.id, type=1
+                                )
+        ParseHandler(map_, self.session).create_items()
+        self.assertEqual(self.session.query(ParsedItem).count(), 2)
