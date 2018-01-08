@@ -2,9 +2,6 @@ import json
 import unittest
 from unittest import mock
 
-from web.models.parser import Base
-from web.models.category import Category, Base as CategoryBase
-
 from .factories import CategoryFactory, ParserMapFactory
 from .utils import MockResponse
 from .common import Session
@@ -12,7 +9,7 @@ from .constants import TEST_HTML
 
 from parser.handlers import ParseHandler
 
-from web.models.parser import ParsedItem
+from models.parser import ParsedItem
 
 
 class ParserHandlerTests(unittest.TestCase):

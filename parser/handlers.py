@@ -5,7 +5,7 @@ import db
 
 from .parsers import PARSERS
 
-from web.models.parser import ParsedItem
+from models.parser import ParsedItem
 
 
 class ParseHandler(object):
@@ -17,7 +17,7 @@ class ParseHandler(object):
     def create_items(self):
         to_create = list()
         for i in PARSERS.get(self.map.type)(self.map).get_items():
-            item = self.create_item(i)
+            item = self.get_item(i)
             if item:
                 to_create.append(item)
         self.session.add_all(to_create)
@@ -29,9 +29,9 @@ class ParseHandler(object):
 
     def is_new(self, _hash):
         q = self.session.query(ParsedItem).filter(ParsedItem.hash == _hash)
-        return self.session.query(q.exists())
+        return not self.session.query(q.exists()).scalar()
 
-    def create_item(self, i):
-        _hash = self.get_item_hash(i)
+    def get_item(self, data):
+        _hash = self.get_item_hash(data)
         if self.is_new(_hash):
-            return ParsedItem(hash=_hash, category_id=self.map.category_id, data=json.dumps(i))
+            return ParsedItem(hash=_hash, category_id=self.map.category_id, data=json.dumps(data))

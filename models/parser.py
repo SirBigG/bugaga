@@ -1,19 +1,20 @@
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, JSON, Boolean
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
 
 from .base import Base
 
 
 class ParserMap(Base):
-    from web.models.category import Category
+    from models.category import Category
     __tablename__ = 'parsermap'
 
     id = Column(Integer, primary_key=True)
     category_id = Column(Integer, ForeignKey(Category.id), nullable=False)
+    host = Column(String(255), nullable=False)
     link = Column(String, nullable=False)
     map = Column(String, nullable=False)
-    root = Column(String(256))
+    root = Column(String(255))
     type = Column(Integer, nullable=False)
     last_crawling = Column(DateTime)
     period = Column(Integer, nullable=False)
@@ -25,7 +26,7 @@ class ParserMap(Base):
 
 
 class ParsedItem(Base):
-    from web.models.category import Category
+    from models.category import Category
     __tablename__ = 'parseditem'
 
     id = Column(Integer, primary_key=True)

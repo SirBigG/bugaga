@@ -1,7 +1,7 @@
 import factory.alchemy
 
-from web.models.category import Category
-from web.models.parser import ParserMap
+from models.category import Category
+from models.parser import ParserMap
 
 from .common import Session
 
@@ -23,6 +23,7 @@ class ParserMapFactory(factory.alchemy.SQLAlchemyModelFactory):
         sqlalchemy_session_persistence = 'commit'
 
     link = 'link'
+    host = 'host'
     map = '{"key1": "xpath"}'
     root = "root_xpath"
     type = 1
