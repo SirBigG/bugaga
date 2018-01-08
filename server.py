@@ -15,7 +15,7 @@ class Application(object):
     def __init__(self, loop=None):
         self.app = web.Application(loop=loop or asyncio.get_event_loop())
         self.engine = db.Engine
-        self.session = db.Session
+        self.session = db.Session()
 
     def start(self):
         for route in routes.ROUTES_GET:
