@@ -19,7 +19,7 @@ class User(Base):
     categories = relationship(Category, secondary="user_category_association")
 
     def __repr__(self):
-        return f'<User(slug={self.username})>'
+        return f'<User(username={self.username})>'
 
     def set_password(cls):
         pass
