@@ -9,3 +9,5 @@ nohup.out
 env/
 .idea/
 db.sqlite3
+
+project.env

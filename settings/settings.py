@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
+import os
+
 
 DEBUG_LEVEL = logging.basicConfig(level=logging.DEBUG)
 
@@ -17,4 +19,7 @@ try:
 except ImportError:
     logging.warning("No local settings!")
 
-DB_SETTINGS = (DB_USER, DB_PASSWORD, DB_HOST, DB_NAME)
+if 'WORKSPACE' in os.environ and os.environ['WORKSPACE'] == 'DEV':
+    ENGINE = "sqlite:///db.sqlite3"
+else:
+    ENGINE = "postgresql://%s:%s@%s/%s" % (DB_USER, DB_PASSWORD, DB_HOST, DB_NAME)

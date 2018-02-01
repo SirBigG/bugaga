@@ -7,3 +7,6 @@ services:
        - .:/web
     ports:
       - 8888:8888
+
+    env_file:
+      - project.env

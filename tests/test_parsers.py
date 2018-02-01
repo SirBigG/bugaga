@@ -2,10 +2,10 @@ import json
 import unittest
 from unittest import mock
 
-from .constants import TEST_HTML
-from .utils import MockResponse
-from .factories import ParserMapFactory, CategoryFactory
-from .common import Session
+from tests.constants import TEST_HTML
+from tests.utils import MockResponse
+from tests.factories import ParserMapFactory, CategoryFactory
+from tests.common import Session
 
 from parser.parsers import HtmlParser
 
