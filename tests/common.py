@@ -5,8 +5,8 @@ from sqlalchemy import orm
 from models import *
 from models.base import Base
 
-engine = sqlalchemy.create_engine('sqlite:///:memory:')
+Engine = sqlalchemy.create_engine('sqlite:///:memory:')
 # Create tables
-Base.metadata.create_all(engine)
+Base.metadata.create_all(Engine)
 Session = orm.scoped_session(orm.sessionmaker())
-Session.configure(bind=engine)
+Session.configure(bind=Engine)

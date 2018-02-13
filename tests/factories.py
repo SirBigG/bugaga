@@ -2,6 +2,7 @@ import factory.alchemy
 
 from models.category import Category
 from models.parser import ParserMap
+from models.auth import User
 
 from .common import Session
 
@@ -29,3 +30,12 @@ class ParserMapFactory(factory.alchemy.SQLAlchemyModelFactory):
     type = 1
     period = 15
     period_type = "minutes"
+
+
+class UserFactory(factory.alchemy.SQLAlchemyModelFactory):
+    class Meta:
+        model = User
+        sqlalchemy_session = Session
+        sqlalchemy_session_persistence = 'commit'
+
+    username = factory.Sequence(lambda n: 'username%d' % n)
