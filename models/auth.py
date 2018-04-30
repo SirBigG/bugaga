@@ -11,8 +11,6 @@ class User(Base):
     __tablename__ = 'user'
 
     id = Column(Integer, primary_key=True)
-    username = Column(String(255), unique=True, nullable=False)
-    password = Column(String(255), nullable=False)
     date_joined = Column(DateTime, default=datetime.now())
     telegram_key = Column(String(255), nullable=True)
     temp_key = Column(String(255), nullable=True)
@@ -20,12 +18,6 @@ class User(Base):
 
     def __repr__(self):
         return f'<User(username={self.username})>'
-
-    def set_password(cls):
-        pass
-
-    def check_password(cls):
-        pass
 
 
 class UserCategoryAssociation(Base):
