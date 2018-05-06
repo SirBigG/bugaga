@@ -1,12 +1,16 @@
 version: '2'
 
 services:
-  core:
-    build: .
-    volumes:
-       - .:/web
-    ports:
-      - 8888:8888
+  # core:
+  #   build: .
+  #   volumes:
+  #      - .:/web
+  #   ports:
+  #     - 8888:8888
 
-    env_file:
-      - project.env
+  #   env_file:
+  #     - project.env
+
+  bot:
+    build: .
+    command: sh -c "python bot.py"
