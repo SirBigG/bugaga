@@ -15,13 +15,16 @@ class ParseHandler(object):
         self.session = db.Session() if session is None else session
 
     def create_items(self):
+        tt = list()
         to_create = list()
         for i in PARSERS.get(self.map.type)(self.map).get_items():
             item = self.get_item(i)
             if item:
                 to_create.append(item)
+                tt.append(i)
         self.session.add_all(to_create)
         self.session.commit()
+        return tt
 
     def get_item_hash(self, i):
         return hashlib.md5((':'.join([i[k] for k in json.loads(self.map.map).keys()]) + self.map.link).encode('utf-8')

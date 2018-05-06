@@ -7,3 +7,4 @@ factory_boy
 requests
 passlib==1.7.1
 pyjwt==1.5.3
+aiotg==0.9.9

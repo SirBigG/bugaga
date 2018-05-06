@@ -21,6 +21,9 @@ JWT_SECRET = 'secret'
 JWT_ALGORITHM = 'HS256'
 JWT_EXP_DELTA_SECONDS = 20
 
+# Bot settings
+TELEGRAM_TOKEN = ''
+
 
 try:
     from settings.settings_local import *
