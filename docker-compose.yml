@@ -13,4 +13,29 @@ services:
 
   bot:
     build: .
+    restart: always
     command: sh -c "python bot.py"
+    volumes:
+      - .:/web
+    env_file:
+      - project.env
+
+  cron:
+    build: .
+    restart: always
+    command: sh -c "cron && tail -f /var/log/cron.log"
+    volumes:
+      - .:/web
+    env_file:
+      - project.env
+
+  admin:
+    build: .
+    restart: always
+    command: sh -c "python admin.py"
+    volumes:
+      - .:/web
+    env_file:
+      - project.env
+    ports:
+      - 127.0.0.1:8181:8181

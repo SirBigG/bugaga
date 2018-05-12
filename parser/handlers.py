@@ -27,7 +27,9 @@ class ParseHandler(object):
         return tt
 
     def get_item_hash(self, i):
-        return hashlib.md5((':'.join([i[k] for k in json.loads(self.map.map).keys()]) + self.map.link).encode('utf-8')
+        _map = json.loads(self.map.map)
+        _map.pop('encode', None)
+        return hashlib.md5((':'.join([i[k] for k in _map.keys()]) + self.map.link).encode('utf-8')
                            ).hexdigest()
 
     def is_new(self, _hash):

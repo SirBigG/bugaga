@@ -9,5 +9,14 @@ class HtmlParser(BaseParser):
         tree = html.fromstring(self.get_content())
         parsed = list()
         for i in tree.xpath(self.info.root):
-            parsed.append({k: i.xpath(v)[0] for k, v in self.get_map().items()})
+            data = {}
+            for k, v in self.get_map().items():
+                value = i.xpath(v)[0]
+                if k in self.links_keys:
+                    if not value.startswith(self.info.host):
+                        value = self.info.host + value
+                if self.encode and k in self.text_keys:
+                    value = value.encode(self.encode).decode()
+                data.update({k: value})
+            parsed.append(data)
         return parsed

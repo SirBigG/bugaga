@@ -1,3 +1,5 @@
+#!/usr/local/bin/python
+
 import asyncio
 
 import requests
@@ -18,6 +20,7 @@ def parse_items():
         to_create.extend(items)
     # closed session finally
     session.close()
+    print(f"Created {len(to_create)} items.")
     response = requests.post("https://agromega.in.ua/api/news/", json={"items": to_create})
     link = None
     if response.status_code == 200:
@@ -30,7 +33,7 @@ async def send_to_telegram(link, items):
         for user in session.query(User).filter_by(is_subscribed=True).all():
             from bot import bot
             private = bot.private(str(user.telegram_key))
-            await private.send_text("Останні новини по підписці (%s)" % link)
+            await private.send_text("Останні новини по Вашій підписці (%s)." % link)
 
 if __name__ == "__main__":
     link, items = parse_items()

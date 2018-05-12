@@ -31,6 +31,6 @@ except ImportError:
     logging.warning("No local settings!")
 
 if 'WORKSPACE' in os.environ and os.environ['WORKSPACE'] == 'DEV':
-    ENGINE = "sqlite:///db.sqlite3"
+    ENGINE = "sqlite:////web/db.sqlite3"
 else:
     ENGINE = "postgresql://%s:%s@%s:%s/%s" % (DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME)

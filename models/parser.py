@@ -1,9 +1,10 @@
 from datetime import datetime
 
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
+from sqlalchemy.orm import relationship, backref
+
 
 from .base import Base
-
 
 class ParserMap(Base):
     from models.category import Category
@@ -11,6 +12,7 @@ class ParserMap(Base):
 
     id = Column(Integer, primary_key=True)
     category_id = Column(Integer, ForeignKey(Category.id), nullable=False)
+    category = relationship(Category)  # , backref=backref('category', lazy='dynamic'))
     host = Column(String(255), nullable=False)
     link = Column(String, nullable=False)
     map = Column(String, nullable=False)
