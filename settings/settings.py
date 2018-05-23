@@ -22,7 +22,7 @@ JWT_ALGORITHM = 'HS256'
 JWT_EXP_DELTA_SECONDS = 20
 
 # Bot settings
-TELEGRAM_TOKEN = ''
+TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN') or ''
 
 
 try:
