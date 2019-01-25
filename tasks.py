@@ -34,6 +34,7 @@ async def send_to_telegram(link, items):
             from bot import bot
             private = bot.private(str(user.telegram_key))
             await private.send_text("Останні новини по Вашій підписці (%s)." % link)
+        session.close()
 
 if __name__ == "__main__":
     link, items = parse_items()
