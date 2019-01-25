@@ -6,10 +6,10 @@ import requests
 
 from db import Session
 
-from models.parser import ParserMap
+from models.parser import ParserMap, AdvertParserMap
 from models.auth import User
 
-from parser.handlers import ParseHandler
+from parser.handlers import ParseHandler, LinkParseHandler, AdvertParseHandler
 
 
 def parse_items():
@@ -27,6 +27,18 @@ def parse_items():
         link = response.json()["link"]
     return link, to_create
 
+def parse_links():
+    session = Session()
+    for i in session.query(AdvertParserMap).filter(AdvertParserMap.is_active == 1, AdvertParserMap.content_type == 1):
+        LinkParseHandler(i, session).create_items()
+    session.close()
+
+def parse_advert():
+    session = Session()
+    for i in session.query(AdvertParserMap).filter(AdvertParserMap.is_active == 1, AdvertParserMap.content_type == 2):
+        AdvertParseHandler(i, session).create_adverts()
+    session.close()
+
 async def send_to_telegram(link, items):
     if link and items:
         session = Session()
@@ -40,3 +52,7 @@ if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     loop.run_until_complete(send_to_telegram(link, items))
     loop.close()
+
+    # parse adverts
+    parse_links()
+    parse_advert()

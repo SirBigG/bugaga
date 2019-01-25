@@ -8,17 +8,19 @@ from db import Engine
 
 from models.auth import User
 from models.category import Category
-from models.parser import ParserMap, ParsedItem
+from models.parser import ParserMap, ParsedItem, AdvertParserMap, Link, Advert
 
-# TODO: Monkey path remove it after flask-udmin is updated
+# TODO: Monkey path remove it after flask-admin is updated
 from flask_admin.contrib.sqla import fields
 from flask_admin._compat import text_type
 from sqlalchemy.orm.util import identity_key
+
 
 def get_pk_from_identity(obj):
     res = identity_key(instance=obj)
     cls, key = res[0], res[1]
     return u':'.join(text_type(x) for x in key)
+
 
 fields.get_pk_from_identity = get_pk_from_identity
 
@@ -35,6 +37,9 @@ if __name__ == '__main__':
     admin.add_view(ModelView(Category, session))
     admin.add_view(ModelView(ParserMap, session))
     admin.add_view(ModelView(ParsedItem, session))
+    admin.add_view(ModelView(AdvertParserMap, session))
+    admin.add_view(ModelView(Link, session))
+    admin.add_view(ModelView(Advert, session))
 
     # Start app
     app.debug = True
