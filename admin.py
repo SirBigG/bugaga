@@ -32,7 +32,7 @@ session = scoped_session(sessionmaker(bind=Engine))
 
 if __name__ == '__main__':
     # Create admin
-    admin = Admin(app, name='microblog', template_mode='bootstrap3')
+    admin = Admin(app, name='microblog', template_mode='bootstrap3', endpoint='admin_parser')
     admin.add_view(ModelView(User, session))
     admin.add_view(ModelView(Category, session))
     admin.add_view(ModelView(ParserMap, session))
