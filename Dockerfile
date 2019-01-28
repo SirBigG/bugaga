@@ -1,8 +1,24 @@
-FROM python:3.6.4
+FROM python:3.6.4-alpine
 
 ENV PYTHONUNBUFFERED 1
 
-RUN apt-get update && apt-get --assume-yes install cron
+RUN apk update && apk add dcron curl wget rsync ca-certificates && rm -rf /var/cache/apk/*
+
+RUN apk --no-cache add autoconf automake postgresql-dev gcc python3-dev musl-dev g++ \
+                       libxml2-dev \
+                       libxslt-dev \
+                       jpeg-dev \
+                       zlib-dev \
+                       freetype-dev \
+                       lcms2-dev \
+                       openjpeg-dev \
+                       tiff-dev \
+                       tk-dev \
+                       tcl-dev \
+                       build-base \
+                       linux-headers \
+                       pcre-dev \
+                       git
 
 ADD crontab /etc/cron.d/parser-cron
 
