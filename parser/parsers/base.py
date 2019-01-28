@@ -14,7 +14,7 @@ class BaseParser(object):
         self.encode = self.map.pop('encode', None)
         self.text_keys = ['title', 'description', 'text']
         self.links_keys = ['link']
-        self.status_code = None
+        self.status_code = 200
 
     def get_map(self):
         return self.map
