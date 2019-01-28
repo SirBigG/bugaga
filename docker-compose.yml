@@ -23,9 +23,10 @@ services:
   cron:
     build: .
     restart: always
-    command: sh -c "cron && tail -f /var/log/cron.log"
+    command: sh -c "touch /var/log/cron.log && cron && tail -f /var/log/cron.log"
     volumes:
       - .:/web
+      - /var/log:/var/log
     env_file:
       - project.env
 
