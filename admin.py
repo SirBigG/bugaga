@@ -1,3 +1,5 @@
+import json
+
 from flask import Flask
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
@@ -30,6 +32,13 @@ app.config['SECRET_KEY'] = '123456790'
 
 session = scoped_session(sessionmaker(bind=Engine))
 
+
+class AdvertModelView(ModelView):
+    column_editable_list = ("category",)
+    column_formatters = dict(data=lambda v, c, m, p: json.loads(m.data))
+    page_size = 200
+
+
 if __name__ == '__main__':
     # Create admin
     admin = Admin(app, name='microblog', template_mode='bootstrap3', url="/admin/advert")
@@ -39,7 +48,7 @@ if __name__ == '__main__':
     admin.add_view(ModelView(ParsedItem, session))
     admin.add_view(ModelView(AdvertParserMap, session))
     admin.add_view(ModelView(Link, session))
-    admin.add_view(ModelView(Advert, session))
+    admin.add_view(AdvertModelView(Advert, session))
 
     # Start app
     app.debug = True
