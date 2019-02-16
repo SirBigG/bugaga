@@ -46,7 +46,8 @@ class HtmlIterParser(HtmlParser):
     def __init__(self, info):
         super().__init__(info)
         self.page = 1
-        self.max_page = 200
+        # TODO: migrate this setting to environment variables
+        self.max_page = 100
 
     def __iter__(self):
         return self

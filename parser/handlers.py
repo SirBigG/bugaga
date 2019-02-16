@@ -43,9 +43,16 @@ class ParseHandler(object):
 
 
 class LinkParseHandler(ParseHandler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.counter = 0
+
     def create_items(self):
         to_create = list()
         for items in PARSERS.get(self.map.type)(self.map):
+            # If more than ten parsed items just skip
+            if self.counter >= 10:
+                break
             for i in items:
                 item = self.get_item(i)
                 if item:
@@ -61,6 +68,7 @@ class LinkParseHandler(ParseHandler):
     def get_item(self, data):
         if self.is_new(data["link"]):
             return Link(link=data["link"])
+        self.counter += 1
 
 
 class AdvertParseHandler(ParseHandler):
