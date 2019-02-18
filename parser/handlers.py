@@ -76,6 +76,6 @@ class AdvertParseHandler(ParseHandler):
         for link in self.session.query(Link).filter(Link.is_parsed.is_(False)).filter(Link.link.contains(self.map.host)):
             item = PARSERS.get(self.map.type)(self.map, link=link.link).get_item()
             if item:
-                link.is_parsed = True
                 self.session.add(Advert(data=json.dumps(item), link=link.link))
-                self.session.commit()
+            link.is_parsed = True
+            self.session.commit()

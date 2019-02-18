@@ -1,7 +1,7 @@
 #!/usr/local/bin/python
 
 import asyncio
-
+import logging
 import requests
 
 from db import Session
@@ -44,8 +44,11 @@ async def send_to_telegram(link, items):
         session = Session()
         for user in session.query(User).filter_by(is_subscribed=True).all():
             from bot import bot
-            private = bot.private(str(user.telegram_key))
-            await private.send_text("Останні новини по Вашій підписці (%s)." % link)
+            try:
+                private = bot.private(str(user.telegram_key))
+                await private.send_text("Останні новини по Вашій підписці (%s)." % link)
+            except Exception as e:
+                logging.error(f'user_id : {user.telegram_key}. Error - {e}')
         session.close()
 
 if __name__ == "__main__":
