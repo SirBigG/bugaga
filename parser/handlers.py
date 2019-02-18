@@ -1,5 +1,6 @@
 import json
 import hashlib
+from urllib import parse
 
 import db
 
@@ -66,8 +67,11 @@ class LinkParseHandler(ParseHandler):
         return not self.session.query(q.exists()).scalar()
 
     def get_item(self, data):
-        if self.is_new(data["link"]):
-            return Link(link=data["link"])
+        # Clean link before checking
+        _link = parse.urlparse(data["link"])
+        _link = f'{_link.scheme}://{_link.netloc}{_link.path}'
+        if self.is_new(_link):
+            return Link(link=_link)
         self.counter += 1
 
 
