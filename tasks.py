@@ -11,6 +11,8 @@ from models.auth import User
 
 from parser.handlers import ParseHandler, LinkParseHandler, AdvertParseHandler
 
+from processing import processing
+
 
 def parse_items():
     session = Session()
@@ -60,3 +62,8 @@ if __name__ == "__main__":
     # parse adverts
     parse_links()
     parse_advert()
+
+    # categorize parsed data
+    processing()
+
+    # TODO: added image load

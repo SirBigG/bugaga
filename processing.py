@@ -2,17 +2,25 @@ import json
 
 import pandas as pd
 import gensim
+import numpy as np
+
+from operator import itemgetter
 
 from db import Session
 
 from models.parser import Advert
+
+from process import UkrainianStemmer
+
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.neighbors import KNeighborsClassifier
 
 
 def preprocess(text):
     result = []
     for token in gensim.utils.simple_preprocess(text):
         if token not in gensim.parsing.preprocessing.STOPWORDS and len(token) > 3:
-            result.append(token)
+            result.append(UkrainianStemmer(token).stem_word())
     return result
 
 
@@ -50,3 +58,36 @@ def process_data():
     # import pdb; pdb.set_trace()
     for idx, topic in lda_model.print_topics(-1):
         print('Topic: {} \nWords: {}'.format(idx, topic))
+
+
+def processing():
+    session = Session()
+
+    adverts = session.query(Advert).filter(Advert.category.isnot(None))
+    _to_train = []
+    for i in adverts:
+        item = json.loads(i.data)
+        _to_train.append([' '.join(set(preprocess(f'{item["title"]}. {item["description"]}'))), i.category])
+
+    vectorizer = TfidfVectorizer()
+    _to_train = sorted(_to_train, key=itemgetter(1))
+    X = vectorizer.fit_transform([i[0] for i in _to_train])
+
+    y_train = np.zeros(len(_to_train))
+
+    for i, j in enumerate([i[1] for i in _to_train]):
+        y_train[i] = j
+
+    modelknn = KNeighborsClassifier(n_neighbors=7)
+    modelknn.fit(X, y_train)
+
+    test_adverts = session.query(Advert).filter(Advert.category.is_(None))
+
+    for i in test_adverts:
+        item = json.loads(i.data)
+        predicted_labels_knn = modelknn.predict(
+            vectorizer.transform([' '.join(set(preprocess(f'{item["title"]}. {item["description"]}')))]))
+        i.category = predicted_labels_knn[0]
+
+    session.commit()
+    session.close()
