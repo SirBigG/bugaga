@@ -1,4 +1,5 @@
 import json
+import logging
 
 import pandas as pd
 import gensim
@@ -68,6 +69,10 @@ def processing():
     for i in adverts:
         item = json.loads(i.data)
         _to_train.append([' '.join(set(preprocess(f'{item["title"]}. {item["description"]}'))), i.category])
+
+    if not _to_train:
+        logging.info('No data to train')
+        return
 
     vectorizer = TfidfVectorizer()
     _to_train = sorted(_to_train, key=itemgetter(1))

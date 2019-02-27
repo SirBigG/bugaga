@@ -17,26 +17,39 @@ services:
     command: sh -c "python bot.py"
     volumes:
       - .:/web
+    links:
+      - db
     env_file:
       - project.env
 
-  cron:
-    build: .
-    restart: always
-    command: sh -c "touch /var/log/cron.log && crond && tail -f /var/log/cron.log"
-    volumes:
-      - .:/web
-      - /var/log:/var/log
-    env_file:
-      - project.env
+#  cron:
+#    build: .
+#    restart: always
+#    command: sh -c "touch /var/log/cron.log && crond && tail -f /var/log/cron.log"
+#    volumes:
+#      - .:/web
+#      - /var/log:/var/log
+#    env_file:
+#      - project.env
 
   admin:
     build: .
     restart: always
-    command: sh -c "python admin.py"
+    command: sh -c "/web/bin/run.sh"
     volumes:
       - .:/web
     env_file:
       - project.env
+    links:
+      - db
     ports:
       - 127.0.0.1:8181:8181
+
+  db:
+    image: postgres:9.6.9-alpine
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    env_file:
+      - project.env
+    ports:
+      - 5432:5432

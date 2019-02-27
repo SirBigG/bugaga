@@ -11,3 +11,4 @@ env/
 db.sqlite3
 
 project.env
+data/
