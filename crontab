@@ -1,3 +1,0 @@
-0 * * * * root WORKSPACE=DEV TELEGRAM_TOKEN=$TELEGRAM_TOKEN /usr/local/bin/python /web/tasks.py >> /var/log/cron.log 2>&1
-* * * * * root echo "Im alive" >> /var/log/cron.log 2>&1
-# An empty line is required at the end of this file for a valid cron file.
