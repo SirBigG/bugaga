@@ -1,8 +1,8 @@
 """init
 
-Revision ID: a5d0265f38a1
+Revision ID: 4674009f0de3
 Revises: 
-Create Date: 2019-02-27 14:23:18.707843
+Create Date: 2019-02-28 16:36:13.028626
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'a5d0265f38a1'
+revision = '4674009f0de3'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -63,7 +63,7 @@ def upgrade():
     sa.Column('is_parsed', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('user',
+    op.create_table('tusers',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('date_joined', sa.DateTime(), nullable=True),
     sa.Column('telegram_key', sa.String(length=255), nullable=True),
@@ -99,7 +99,7 @@ def upgrade():
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('category_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['category_id'], ['category.id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['tusers.id'], ),
     sa.PrimaryKeyConstraint('user_id', 'category_id')
     )
     # ### end Alembic commands ###
@@ -110,7 +110,7 @@ def downgrade():
     op.drop_table('user_category_association')
     op.drop_table('parsermap')
     op.drop_table('parseditem')
-    op.drop_table('user')
+    op.drop_table('tusers')
     op.drop_table('link')
     op.drop_index('category_rgt_idx', table_name='category')
     op.drop_index('category_lft_idx', table_name='category')

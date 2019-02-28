@@ -8,7 +8,7 @@ from .base import Base
 
 class User(Base):
     from models.category import Category
-    __tablename__ = 'user'
+    __tablename__ = 'tusers'
 
     id = Column(Integer, primary_key=True)
     date_joined = Column(DateTime, default=datetime.now())
