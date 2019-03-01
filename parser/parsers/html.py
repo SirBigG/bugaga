@@ -57,6 +57,7 @@ class HtmlIterParser(HtmlParser):
             self.page += 1
             return self.get_items()
         else:
+            logging.error(self.status_code)
             raise StopIteration
 
     def get_link(self):

@@ -1,5 +1,6 @@
 import requests
 import json
+import logging
 
 
 class BaseParser(object):
@@ -28,6 +29,8 @@ class BaseParser(object):
     def get_content(self):
         response = self.get_response()
         self.status_code = response.status_code
+        if self.status_code != 200:
+            logging.error(response.content)
         return response.content
 
     def get_items(self):
