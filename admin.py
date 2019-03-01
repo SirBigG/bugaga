@@ -1,4 +1,5 @@
 import json
+import os
 
 from flask import Flask
 from flask_admin import Admin
@@ -28,7 +29,7 @@ fields.get_pk_from_identity = get_pk_from_identity
 
 # Create application
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '123456790'
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY') or '123456790'
 
 session = scoped_session(sessionmaker(bind=Engine))
 
