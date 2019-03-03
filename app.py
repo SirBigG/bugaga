@@ -1,7 +1,10 @@
 import json
 import os
+from datetime import datetime, timedelta
 
-from flask import Flask
+from flask import Flask, request, jsonify
+from flask.views import MethodView
+
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 
@@ -40,6 +43,33 @@ class AdvertModelView(ModelView):
     page_size = 200
 
 
+class AdvertListView(MethodView):
+    per_page = 20
+
+    @staticmethod
+    def next_prev_links(page, items_count, category, request):
+        _base_url=f"{request.scheme}://{request.host}{request.path}"
+        if category:
+            _base_url = f"{_base_url}?category={category}"
+
+        _prev_page = f"{_base_url}&page={page - 1}" if page > 1 else None
+        _next_page = f"{_base_url}&page={page + 1}"
+        if items_count == 0:
+            _next_page = None
+        return _prev_page, _next_page
+
+    def get(self):
+        category = request.args.get('category')
+        page = request.args.get('page') or 1
+        query = session.query(Advert).filter(Advert.created > datetime.now() - timedelta(days=100))
+        if category:
+            query = query.filter(Advert.category == category)
+        _items = [{"data": item.data, "link": item.link} for item in
+                  query.order_by(Advert.created.desc()).limit(self.per_page).offset((int(page) - 1) * self.per_page)]
+        _prev, _next = self.next_prev_links(int(page), len(_items),category, request)
+        return jsonify(items=_items, next=_next, previous=_prev)
+
+
 if __name__ == '__main__':
     # Create admin
     admin = Admin(app, name='microblog', template_mode='bootstrap3', url="/admin/advert")
@@ -50,6 +80,8 @@ if __name__ == '__main__':
     admin.add_view(ModelView(AdvertParserMap, session))
     admin.add_view(ModelView(Link, session))
     admin.add_view(AdvertModelView(Advert, session))
+
+    app.add_url_rule('/adverts', view_func=AdvertListView.as_view('advert_list'))
 
     # Start app
     app.debug = True

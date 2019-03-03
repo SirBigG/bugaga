@@ -1,2 +1,6 @@
 db.sqlite3
 data/
+.idea/
+.git/
+Dockerfile
+docker-compose.yml

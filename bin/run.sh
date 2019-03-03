@@ -4,4 +4,4 @@
 /bin/sh -c "echo '* * * * * echo Im alive >> /var/log/cron.log 2>&1' >> /etc/crontabs/root"
 /bin/sh -c "touch /var/log/cron.log && crond"
 /bin/sh -c "alembic upgrade head"
-/bin/sh -c "python admin.py"
+/bin/sh -c "python app.py"

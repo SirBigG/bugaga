@@ -43,7 +43,7 @@ services:
     links:
       - db
     ports:
-      - 127.0.0.1:8181:8181
+      - 8181:8181
 
   db:
     image: postgres:9.6.9-alpine
@@ -51,5 +51,5 @@ services:
       - ./data:/var/lib/postgresql/data
     env_file:
       - project.env
-    ports:
-      - 5432:5432
+    # ports:
+    #  - 5432:5432

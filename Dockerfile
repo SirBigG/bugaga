@@ -1,4 +1,4 @@
-FROM python:3.6.8-alpine3.9
+FROM python:3.7.2-alpine3.9
 
 ENV PYTHONUNBUFFERED 1
 
@@ -21,13 +21,12 @@ RUN apk --no-cache add autoconf automake postgresql-dev gcc python3-dev musl-dev
                        git \
                        openblas-dev
 
-RUN pip install numpy
+# Install data science libs
+RUN pip install --no-cache-dir numpy scikit-learn
 
 RUN mkdir /web/
 ADD requirements.txt /web/
-RUN pip install -r /web/requirements.txt
+RUN pip install --no-cache-dir -r /web/requirements.txt
 
 WORKDIR web
 ADD . /web/
-
-# CMD ["python", "server.py"]
