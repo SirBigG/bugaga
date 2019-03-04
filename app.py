@@ -84,4 +84,5 @@ admin.add_view(ModelView(AdvertParserMap, session))
 admin.add_view(ModelView(Link, session))
 admin.add_view(AdvertModelView(Advert, session))
 
+# API urls
 app.add_url_rule('/adverts', view_func=AdvertListView.as_view('advert_list'))
