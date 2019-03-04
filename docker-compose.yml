@@ -13,7 +13,7 @@ services:
 
   bot:
     build: .
-    restart: always
+    # restart: always
     command: sh -c "python bot.py"
     volumes:
       - .:/web
@@ -34,7 +34,7 @@ services:
 
   admin:
     build: .
-    restart: always
+    # restart: always
     command: sh -c "/web/bin/run.sh"
     volumes:
       - .:/web

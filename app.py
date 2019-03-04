@@ -16,6 +16,8 @@ from models.auth import User
 from models.category import Category
 from models.parser import ParserMap, ParsedItem, AdvertParserMap, Link, Advert
 
+from settings import settings
+
 # TODO: Monkey path remove it after flask-admin is updated
 from flask_admin.contrib.sqla import fields
 from flask_admin._compat import text_type
@@ -33,6 +35,9 @@ fields.get_pk_from_identity = get_pk_from_identity
 # Create application
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY') or '123456790'
+
+if settings.DEBUG:
+    app.debug = True
 
 session = scoped_session(sessionmaker(bind=Engine))
 
@@ -69,20 +74,14 @@ class AdvertListView(MethodView):
         _prev, _next = self.next_prev_links(int(page), len(_items),category, request)
         return jsonify(items=_items, next=_next, previous=_prev)
 
+# Create admin
+admin = Admin(app, name='microblog', template_mode='bootstrap3', url="/admin/advert")
+admin.add_view(ModelView(User, session))
+admin.add_view(ModelView(Category, session))
+admin.add_view(ModelView(ParserMap, session))
+admin.add_view(ModelView(ParsedItem, session))
+admin.add_view(ModelView(AdvertParserMap, session))
+admin.add_view(ModelView(Link, session))
+admin.add_view(AdvertModelView(Advert, session))
 
-if __name__ == '__main__':
-    # Create admin
-    admin = Admin(app, name='microblog', template_mode='bootstrap3', url="/admin/advert")
-    admin.add_view(ModelView(User, session))
-    admin.add_view(ModelView(Category, session))
-    admin.add_view(ModelView(ParserMap, session))
-    admin.add_view(ModelView(ParsedItem, session))
-    admin.add_view(ModelView(AdvertParserMap, session))
-    admin.add_view(ModelView(Link, session))
-    admin.add_view(AdvertModelView(Advert, session))
-
-    app.add_url_rule('/adverts', view_func=AdvertListView.as_view('advert_list'))
-
-    # Start app
-    app.debug = True
-    app.run('0.0.0.0', 8181)
+app.add_url_rule('/adverts', view_func=AdvertListView.as_view('advert_list'))

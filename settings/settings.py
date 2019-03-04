@@ -5,6 +5,8 @@ import os
 
 DEBUG_LEVEL = logging.basicConfig(level=logging.DEBUG)
 
+DEBUG = True if 'WORKSPACE' in os.environ and os.environ['WORKSPACE'] == 'DEV' else False
+
 # server settings
 HOST = os.getenv('BOT_HOST') or "0.0.0.0"
 PORT = os.getenv('BOT_PORT') or 8888

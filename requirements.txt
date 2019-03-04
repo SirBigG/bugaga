@@ -4,11 +4,12 @@ psycopg2==2.7.3
 sqlalchemy-mptt==0.2.2
 lxml==4.3.2
 factory_boy
-requests
+requests==2.21.0
 passlib==1.7.1
 pyjwt==1.5.3
 aiotg==0.9.9
 Flask==1.0.2
 Flask-Admin==1.5.3
 alembic==1.0.7
-gensim
+gensim==3.7.1
+gunicorn==19.9.0
