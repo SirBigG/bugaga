@@ -4,4 +4,4 @@
 /bin/sh -c "echo '* * * * * echo Im alive >> /var/log/cron.log 2>&1' >> /etc/crontabs/root"
 /bin/sh -c "touch /var/log/cron.log && crond"
 /bin/sh -c "alembic upgrade head"
-/bin/sh -c "gunicorn -b 0.0.0.0:8181 wsgi:app"
+/bin/sh -c "gunicorn -b 0.0.0.0:8181 -w 3 wsgi:app"
