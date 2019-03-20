@@ -27,7 +27,7 @@ def preprocess(text):
 def processing():
     session = Session()
 
-    adverts = session.query(Advert).filter(Advert.category.isnot(None))
+    adverts = session.query(Advert).filter(Advert.category.isnot(None))[:25000]
     _to_train = []
     for i in adverts:
         item = json.loads(i.data)
