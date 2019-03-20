@@ -1,12 +1,65 @@
 import json
 import hashlib
+import uuid
+import logging
+from multiprocessing import Pool
+from io import BytesIO
+
 from urllib import parse
+from PIL import Image
+
+import boto3
+import requests
 
 import db
 
 from .parsers import PARSERS
 
 from models.parser import ParsedItem, Advert, Link
+
+from settings import settings
+
+
+session = boto3.session.Session()
+client = session.client('s3', region_name=settings.DO_SPACE_REGION,
+                        endpoint_url=f'https://{settings.DO_SPACE_REGION}.digitaloceanspaces.com',
+                        aws_access_key_id=settings.DO_SPACE_KEY,
+                        aws_secret_access_key=settings.DO_SPACE_SECRET)
+
+
+def _load_image(item, folder_name):
+    image = item.get('image')
+    if image:
+        try:
+            response = requests.get(image, stream=True)
+            img = Image.open(BytesIO(response.content))
+            img.thumbnail((320, 230), Image.ANTIALIAS)
+            output = BytesIO()
+            img.save(output, 'JPEG', quality=75)
+            output.seek(0)
+            filename = uuid.uuid4()
+            client.upload_fileobj(output, settings.DO_SPACE_NAME, f'{folder_name}/{filename}.jpg',
+                                  ExtraArgs={'ContentType': 'image/jpeg', 'ACL': 'public-read'})
+            item['image'] = \
+                f"https://{settings.DO_SPACE_NAME}.{settings.DO_SPACE_REGION}.digitaloceanspaces.com/{folder_name}/{filename}.jpg"
+        except Exception as e:
+            logging.error(e)
+    return item
+
+
+def load_advert_image(item):
+    return _load_image(item, 'adv')
+
+
+def load_news_image(item):
+    return _load_image(item, 'news')
+
+
+# For future usage
+def load_images(items, func):
+    with Pool(5) as p:
+        items = p.map(func, items)
+    return items
 
 
 class ParseHandler(object):
@@ -40,6 +93,7 @@ class ParseHandler(object):
     def get_item(self, data):
         _hash = self.get_item_hash(data)
         if self.is_new(_hash):
+            data = _load_image(data, 'news')
             return ParsedItem(hash=_hash, category_id=self.map.category_id, data=json.dumps(data))
 
 
@@ -80,6 +134,7 @@ class AdvertParseHandler(ParseHandler):
         for link in self.session.query(Link).filter(Link.is_parsed.is_(False)).filter(Link.link.contains(self.map.host)):
             item = PARSERS.get(self.map.type)(self.map, link=link.link).get_item()
             if item:
+                _load_image(item, 'adv')
                 self.session.add(Advert(data=json.dumps(item), link=link.link))
             link.is_parsed = True
             self.session.commit()
