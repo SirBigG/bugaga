@@ -33,11 +33,13 @@ def parse_items():
             link = response.json()["link"]
     return link, to_create
 
+
 def parse_links():
     session = Session()
     for i in session.query(AdvertParserMap).filter(AdvertParserMap.is_active.is_(True), AdvertParserMap.content_type == 1):
         LinkParseHandler(i, session).create_items()
     session.close()
+
 
 def parse_advert():
     session = Session()
@@ -45,22 +47,23 @@ def parse_advert():
         AdvertParseHandler(i, session).create_adverts()
     session.close()
 
-async def send_to_telegram(link, items):
+
+async def send_to_telegram():
     if link and items:
         session = Session()
         for user in session.query(User).filter_by(is_subscribed=True).all():
             from bot import bot
             try:
                 private = bot.private(str(user.telegram_key))
-                await private.send_text("Останні новини по Вашій підписці (%s)." % link)
+                await private.send_text("Останні новини по Вашій підписці (https://agromega.in.ua/news/list/).")
             except Exception as e:
                 logging.error(f'user_id : {user.telegram_key}. Error - {e}')
         session.close()
 
 if __name__ == "__main__":
-    link, items = parse_items()
+    parse_items()
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(send_to_telegram(link, items))
+    loop.run_until_complete(send_to_telegram())
     loop.close()
 
     # parse adverts
@@ -69,5 +72,3 @@ if __name__ == "__main__":
 
     # categorize parsed data
     processing()
-
-    # TODO: added image load
