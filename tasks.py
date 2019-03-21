@@ -2,7 +2,6 @@
 
 import asyncio
 import logging
-import requests
 
 from db import Session
 
@@ -16,22 +15,10 @@ from processing import processing
 
 def parse_items():
     session = Session()
-    to_create = list()
     for i in session.query(ParserMap).filter(ParserMap.is_active.is_(True)):
-        items = ParseHandler(i, session).create_items()
-        to_create.extend(items)
+        ParseHandler(i, session).create_items()
     # closed session finally
     session.close()
-
-    print(f"Created {len(to_create)} items.")
-
-    link = None
-    if len(to_create) > 0:
-        # TODO: migrate link to env or change it to api
-        response = requests.post("https://agromega.in.ua/api/news/", json={"items": to_create})
-        if response.status_code == 200:
-            link = response.json()["link"]
-    return link, to_create
 
 
 def parse_links():
