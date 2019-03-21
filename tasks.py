@@ -49,16 +49,15 @@ def parse_advert():
 
 
 async def send_to_telegram():
-    if link and items:
-        session = Session()
-        for user in session.query(User).filter_by(is_subscribed=True).all():
-            from bot import bot
-            try:
-                private = bot.private(str(user.telegram_key))
-                await private.send_text("Останні новини по Вашій підписці (https://agromega.in.ua/news/list/).")
-            except Exception as e:
-                logging.error(f'user_id : {user.telegram_key}. Error - {e}')
-        session.close()
+    session = Session()
+    for user in session.query(User).filter_by(is_subscribed=True).all():
+        from bot import bot
+        try:
+            private = bot.private(str(user.telegram_key))
+            await private.send_text("Останні новини по Вашій підписці (https://agromega.in.ua/news/list/).")
+        except Exception as e:
+            logging.error(f'user_id : {user.telegram_key}. Error - {e}')
+    session.close()
 
 if __name__ == "__main__":
     parse_items()
