@@ -96,6 +96,14 @@ class NewsListView(MethodView):
         return jsonify(items=_items, next=_next, previous=_prev)
 
 
+class AdvertCategories(MethodView):
+    def get(self):
+        query = session.query(Advert).filter(
+            Advert.created > datetime.now() - timedelta(days=7)).distinct(Advert.category)
+        _items = [i.category for i in query]
+        return jsonify(_items)
+
+
 # Create admin
 admin = Admin(app, name='microblog', template_mode='bootstrap3', url="/admin/advert")
 admin.add_view(ModelView(User, session))
@@ -109,3 +117,4 @@ admin.add_view(AdvertModelView(Advert, session))
 # API urls
 app.add_url_rule('/adverts', view_func=AdvertListView.as_view('advert_list'))
 app.add_url_rule('/news', view_func=NewsListView.as_view('news_list'))
+app.add_url_rule('/categories', view_func=AdvertCategories.as_view('category_list'))

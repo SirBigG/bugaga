@@ -16,9 +16,10 @@ from processing import processing
 def parse_items():
     session = Session()
     for i in session.query(ParserMap).filter(ParserMap.is_active.is_(True)):
-        ParseHandler(i, session).create_items()
+        _items = ParseHandler(i, session).create_items()
     # closed session finally
     session.close()
+    return _items
 
 
 def parse_links():
@@ -35,21 +36,22 @@ def parse_advert():
     session.close()
 
 
-async def send_to_telegram():
-    session = Session()
-    for user in session.query(User).filter_by(is_subscribed=True).all():
-        from bot import bot
-        try:
-            private = bot.private(str(user.telegram_key))
-            await private.send_text("Останні новини по Вашій підписці (https://agromega.in.ua/news/list/).")
-        except Exception as e:
-            logging.error(f'user_id : {user.telegram_key}. Error - {e}')
-    session.close()
+async def send_to_telegram(_items):
+    if _items:
+        session = Session()
+        for user in session.query(User).filter_by(is_subscribed=True).all():
+            from bot import bot
+            try:
+                private = bot.private(str(user.telegram_key))
+                await private.send_text("Останні новини по Вашій підписці (https://agromega.in.ua/news/list/).")
+            except Exception as e:
+                logging.error(f'user_id : {user.telegram_key}. Error - {e}')
+        session.close()
 
 if __name__ == "__main__":
-    parse_items()
+    items = parse_items()
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(send_to_telegram())
+    loop.run_until_complete(send_to_telegram(items))
     loop.close()
 
     # parse adverts
