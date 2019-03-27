@@ -56,9 +56,11 @@ class AdvertListView(MethodView):
         _base_url = f"{request.scheme}://{request.host}{request.path}"
         if category:
             _base_url = f"{_base_url}?category={category}"
-
-        _prev_page = f"{_base_url}?page={page - 1}" if page > 1 else None
-        _next_page = f"{_base_url}?page={page + 1}"
+            _prev_page = f"{_base_url}&page={page - 1}" if page > 1 else None
+            _next_page = f"{_base_url}&page={page + 1}"
+        else:
+            _prev_page = f"{_base_url}?page={page - 1}" if page > 1 else None
+            _next_page = f"{_base_url}?page={page + 1}"
         if items_count == 0:
             _next_page = None
         return _prev_page, _next_page
