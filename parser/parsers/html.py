@@ -36,6 +36,8 @@ class HtmlParser(BaseParser):
                             value = i.xpath(v)[0]
                         except IndexError:
                             value = ""
+                    except IndexError:
+                        value = ""
                     to_return.update({k: value})
                 return to_return
             except Exception as e:
