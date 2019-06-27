@@ -27,13 +27,29 @@ client = session.client('s3', region_name=settings.DO_SPACE_REGION,
                         aws_secret_access_key=settings.DO_SPACE_SECRET)
 
 
+WIDTH = 320
+HEIGHT = 230
+
+
 def _load_image(item, folder_name):
     image = item.get('image')
     if image:
         try:
             response = requests.get(image, stream=True)
             img = Image.open(BytesIO(response.content))
-            img.thumbnail((320, 230), Image.ANTIALIAS)
+            hsize = int(float(img.size[1]) * float(WIDTH) / float(img.size[0]))
+            if hsize >= HEIGHT:
+                img = img.resize((WIDTH, hsize), Image.ANTIALIAS)
+                delta = hsize - HEIGHT if hsize > HEIGHT else 0
+                img = img.crop((0, delta / 2, WIDTH, hsize - (delta / 2)))
+            elif hsize < HEIGHT:
+                wsize = int(float(img.size[0]) * float(HEIGHT) / float(img.size[1]))
+                img = img.resize((wsize, HEIGHT), Image.ANTIALIAS)
+                delta = wsize - WIDTH if wsize > WIDTH else 0
+                img = img.crop((delta / 2, 0, wsize - (delta / 2), HEIGHT))
+            else:
+                # If not height resize with auto height
+                img = img.resize((WIDTH, hsize), Image.ANTIALIAS)
             output = BytesIO()
             img.save(output, 'JPEG', quality=75)
             output.seek(0)
