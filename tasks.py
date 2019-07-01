@@ -43,7 +43,7 @@ async def send_to_telegram(_items):
             from bot import bot
             try:
                 private = bot.private(str(user.telegram_key))
-                await private.send_text("Останні новини по Вашій підписці (https://agromega.in.ua/news/list/).")
+                await private.send_text("Останні новини по Вашій підписці (https://agromega.in.ua/news/).")
             except Exception as e:
                 logging.error(f'user_id : {user.telegram_key}. Error - {e}')
         session.close()
