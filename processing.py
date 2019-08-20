@@ -30,7 +30,7 @@ def processing():
     _to_train = []
     with Engine.connect() as con:
         for row in con.execute('select category, data from (select *, row_number() over (partition by category) as rownum from advert) a where rownum <=1000;'):
-            if row[0] >= 0:
+            if row[0] is not None:
                 item = json.loads(row[1])
                 _to_train.append([' '.join(set(preprocess(f'{item["title"]}. {item["description"]}'))), row[0]])
 
