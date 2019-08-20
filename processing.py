@@ -6,7 +6,7 @@ import numpy as np
 
 from operator import itemgetter
 
-from db import Session
+from db import Session, Engine
 
 from models.parser import Advert
 
@@ -27,11 +27,12 @@ def preprocess(text):
 def processing():
     session = Session()
 
-    adverts = session.query(Advert).filter(Advert.category.isnot(None))[:25000]
     _to_train = []
-    for i in adverts:
-        item = json.loads(i.data)
-        _to_train.append([' '.join(set(preprocess(f'{item["title"]}. {item["description"]}'))), i.category])
+    with Engine.connect() as con:
+        for row in con.execute('select category, data from (select *, row_number() over (partition by category) as rownum from advert) a where rownum <=1000;'):
+            if row[0] >= 0:
+                item = json.loads(row[1])
+                _to_train.append([' '.join(set(preprocess(f'{item["title"]}. {item["description"]}'))), row[0]])
 
     if not _to_train:
         logging.info('No data to train')
