@@ -60,8 +60,10 @@ class HtmlIterParser(HtmlParser):
 
     def __next__(self):
         if self.status_code == 200 and self.page <= self.max_page:
+            items = self.get_items()
             self.page += 1
-            return self.get_items()
+            logging.error(self.page)
+            return items
         else:
             logging.error(self.status_code)
             raise StopIteration

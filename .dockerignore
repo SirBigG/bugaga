@@ -4,3 +4,4 @@ data/
 .git/
 Dockerfile
 docker-compose.yml
+__pycache__
