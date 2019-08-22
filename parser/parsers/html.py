@@ -23,7 +23,8 @@ class HtmlParser(BaseParser):
                     data.update({k: value})
                 except Exception as e:
                     logging.error(e)
-            parsed.append(data)
+            if data:
+                parsed.append(data)
         return parsed
 
     def get_item(self):
@@ -66,4 +67,8 @@ class HtmlIterParser(HtmlParser):
             raise StopIteration
 
     def get_link(self):
-        return super().get_link().format(self.page)
+        link = super().get_link()
+        if "{}" in link:
+            self.page = self.max_page
+            return link
+        return link.format(self.page)
