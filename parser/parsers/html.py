@@ -13,13 +13,16 @@ class HtmlParser(BaseParser):
         for i in tree.xpath(self.info.root):
             data = {}
             for k, v in self.get_map().items():
-                value = i.xpath(v)[0]
-                if k in self.links_keys:
-                    if not value.startswith(self.info.host):
-                        value = self.info.host + value
-                if self.encode and k in self.text_keys:
-                    value = value.encode(self.encode).decode()
-                data.update({k: value})
+                try:
+                    value = i.xpath(v)[0]
+                    if k in self.links_keys:
+                        if not value.startswith(self.info.host):
+                            value = self.info.host + value
+                    if self.encode and k in self.text_keys:
+                        value = value.encode(self.encode).decode()
+                    data.update({k: value})
+                except Exception as e:
+                    logging.error(e)
             parsed.append(data)
         return parsed
 
@@ -63,4 +66,8 @@ class HtmlIterParser(HtmlParser):
             raise StopIteration
 
     def get_link(self):
-        return super().get_link().format(self.page)
+        link_ = super().get_link()
+        if "{}" in link_:
+            return link_.format(self.page)
+        self.page = self.max_page
+        return link_

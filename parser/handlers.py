@@ -4,6 +4,7 @@ import uuid
 import logging
 from multiprocessing import Pool
 from io import BytesIO
+from datetime import datetime, timedelta
 
 from urllib import parse
 from PIL import Image
@@ -78,19 +79,22 @@ def load_images(items, func):
     return items
 
 
-# def delete_old_images():
-#     _session = db.Session()
-#     query = _session.query(Advert).filter(Advert.created < datetime.now() - timedelta(days=7)).order_by(Advert.created.desc()).limit(1000)
-#     for item in query:
-#         data = json.loads(item.data)
-#         image = data.pop("image", '')
-#         if image and f"https://{settings.DO_SPACE_NAME}.{settings.DO_SPACE_REGION}.digitaloceanspaces.com" in image:
-#             client.delete_object(
-#                 Bucket=settings.DO_SPACE_NAME,
-#                 Key=image.replace(
-#                     f"https://{settings.DO_SPACE_NAME}.{settings.DO_SPACE_REGION}.digitaloceanspaces.com/", ''))
-#         item.data = json.dumps(data)
-#         _session.commit()
+def delete_old_images(offset=0):
+    _session = db.Session()
+    for item in _session.query(Advert).filter(
+            Advert.created < datetime.now() - timedelta(days=8)).order_by(Advert.created.desc()).limit(1000).offset(offset):
+        data = json.loads(item.data)
+        image = data.pop("image", '')
+        if image and f"https://{settings.DO_SPACE_NAME}.{settings.DO_SPACE_REGION}.digitaloceanspaces.com" in image:
+            try:
+                client.delete_object(
+                    Bucket=settings.DO_SPACE_NAME,
+                    Key=image.replace(
+                        f"https://{settings.DO_SPACE_NAME}.{settings.DO_SPACE_REGION}.digitaloceanspaces.com/", ''))
+            except Exception as e:
+                logging.error(e)
+        item.data = json.dumps(data)
+    _session.commit()
 
 
 class ParseHandler(object):
