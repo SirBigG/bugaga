@@ -66,8 +66,4 @@ class HtmlIterParser(HtmlParser):
             raise StopIteration
 
     def get_link(self):
-        link_ = super().get_link()
-        if "{}" in link_:
-            return link_.format(self.page)
-        self.page = self.max_page
-        return link_
+        return super().get_link().format(self.page)
