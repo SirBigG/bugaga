@@ -69,6 +69,6 @@ class HtmlIterParser(HtmlParser):
     def get_link(self):
         link = super().get_link()
         if "{}" in link:
-            self.page = self.max_page
-            return link
-        return link.format(self.page)
+            return link.format(self.page)
+        self.page = self.max_page
+        return link
