@@ -8,6 +8,8 @@ from flask.views import MethodView
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 
+from wtforms.fields import TextAreaField
+
 from sqlalchemy.orm import sessionmaker, scoped_session
 
 from db import Engine
@@ -46,6 +48,7 @@ class AdvertModelView(ModelView):
     column_editable_list = ("category",)
     column_formatters = dict(data=lambda v, c, m, p: json.loads(m.data))
     page_size = 200
+    column_searchable_list = ["data", "link"]
 
 
 class AdvertListView(MethodView):
@@ -106,14 +109,30 @@ class AdvertCategories(MethodView):
         return jsonify(_items)
 
 
+class LinkModelView(ModelView):
+    column_searchable_list = ["link"]
+
+
+class ParserMapModelView(ModelView):
+    form_widget_args = {
+        'map': {
+            'rows': 10
+        }
+    }
+
+    form_overrides = {
+        "map": TextAreaField
+    }
+
+
 # Create admin
 admin = Admin(app, name='microblog', template_mode='bootstrap3', url="/admin/advert")
 admin.add_view(ModelView(User, session))
 admin.add_view(ModelView(Category, session))
-admin.add_view(ModelView(ParserMap, session))
+admin.add_view(ParserMapModelView(ParserMap, session))
 admin.add_view(ModelView(ParsedItem, session))
-admin.add_view(ModelView(AdvertParserMap, session))
-admin.add_view(ModelView(Link, session))
+admin.add_view(ParserMapModelView(AdvertParserMap, session))
+admin.add_view(LinkModelView(Link, session))
 admin.add_view(AdvertModelView(Advert, session))
 
 # API urls
