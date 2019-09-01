@@ -118,8 +118,7 @@ class ParseHandler(object):
     def get_item_hash(self, i):
         _map = json.loads(self.map.map)
         _map.pop('encode', None)
-        return hashlib.md5((':'.join([i[k] for k in _map.keys()]) + self.map.link).encode('utf-8')
-                           ).hexdigest()
+        return hashlib.md5((':'.join([i.get(k, "") for k in _map.keys()]) + self.map.link).encode('utf-8')).hexdigest()
 
     def is_new(self, _hash):
         q = self.session.query(ParsedItem).filter(ParsedItem.hash == _hash)
