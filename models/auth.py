@@ -15,6 +15,7 @@ class User(Base):
     telegram_key = Column(String(255), nullable=True)
     temp_key = Column(String(255), nullable=True)
     is_subscribed = Column(Boolean, default=True)
+    is_admin = Column(Boolean, default=False)
     categories = relationship(Category, secondary="user_category_association")
 
     def __repr__(self):

@@ -15,11 +15,13 @@ from processing import processing
 
 def parse_items():
     session = Session()
+    _items_count = 0
     for i in session.query(ParserMap).filter(ParserMap.is_active.is_(True)):
         _items = ParseHandler(i, session).create_items()
+        _items_count += len(_items)
     # closed session finally
     session.close()
-    return _items
+    return _items_count
 
 
 def parse_links():
