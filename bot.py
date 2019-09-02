@@ -27,12 +27,12 @@ async def start(chat: Chat, match):
     session.commit()
     await chat.send_text("Дякуємо! Ви успішно підписались на агроновини! Як тільки з'являться публікації вони відразу приходитимуть Вам. Для того щоб запропонувати додати Ваш улюблений ресурс до списку відслідковування, зв'яжіться з нами через форму зворотнього зв'іязку.")
 
-@bot.command("/getNews")
-async def get_news(chat: Chat, match):
-    user = session.query(User).filter_by(telegram_key=str(chat.id)).first()
-    for i in session.query(ParsedItem).all():
-        private = bot.private(str(user.telegram_key))
-        private.send_text(f"{json.loads(i.data)['title']} ({json.loads(i.data)['link']}", **{"parse_mode": "HTML"})
+# @bot.command("/getNews")
+# async def get_news(chat: Chat, match):
+#     user = session.query(User).filter_by(telegram_key=str(chat.id)).first()
+#     for i in session.query(ParsedItem).all():
+#         private = bot.private(str(user.telegram_key))
+#         private.send_text(f"{json.loads(i.data)['title']} ({json.loads(i.data)['link']}", **{"parse_mode": "HTML"})
 
 if __name__ == "__main__":
     # bot.run_webhook(webhook_url=settings.HOST + "")
