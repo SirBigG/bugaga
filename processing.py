@@ -15,11 +15,13 @@ from process import UkrainianStemmer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.neighbors import KNeighborsClassifier
 
+from stop_words import get_stop_words
+
 
 def preprocess(text):
     result = []
     for token in gensim.utils.simple_preprocess(text):
-        if token not in gensim.parsing.preprocessing.STOPWORDS and len(token) > 3:
+        if token not in set(get_stop_words('uk') + get_stop_words('ru')):
             result.append(UkrainianStemmer(token).stem_word())
     return result
 
