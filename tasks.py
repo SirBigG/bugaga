@@ -2,10 +2,11 @@
 
 import asyncio
 import logging
+import json
 
 from db import Session
 
-from models.parser import ParserMap, AdvertParserMap
+from models.parser import ParserMap, AdvertParserMap, ParsedItem
 from models.auth import User
 
 from parser.handlers import ParseHandler, LinkParseHandler, AdvertParseHandler
@@ -41,11 +42,15 @@ def parse_advert():
 async def send_to_telegram(_items):
     if _items:
         session = Session()
+        to_send = ""
+        for item in session.query(ParsedItem).order_by(ParsedItem.created.desc()).limit(3):
+            to_send = f"{to_send}<b>{json.loads(item.data).get('title', '')}</b> \n"
         for user in session.query(User).filter_by(is_subscribed=True).all():
             from bot import bot
             try:
                 private = bot.private(str(user.telegram_key))
-                await private.send_text("Останні новини по Вашій підписці (https://agromega.in.ua/news/).")
+                await private.send_text(f"{to_send} \n<a href='https://agromega.in.ua/news/'>Докладніше</a>",
+                                        parse_mode="HTML")
             except Exception as e:
                 logging.error(f'user_id : {user.telegram_key}. Error - {e}')
         session.close()
