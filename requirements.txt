@@ -1,4 +1,4 @@
-aiohttp==2.3.9
+aiohttp==3.7.4
 SQLAlchemy==1.2.7
 psycopg2==2.7.3
 sqlalchemy-mptt==0.2.2
