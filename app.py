@@ -96,7 +96,7 @@ class NewsListView(MethodView):
     def get(self):
         page = request.args.get('page') or 1
         query = session.query(ParsedItem)
-        _items = [{"data": json.loads(item.data), "created": item.created} for item in
+        _items = [{"data": json.loads(item.data), "created": item.created.strftime("%d.%m.%Y")} for item in
                   query.order_by(ParsedItem.created.desc()).limit(self.per_page).offset((int(page) - 1) * self.per_page)]
         _prev, _next = self.next_prev_links(int(page), len(_items), request)
         return jsonify(items=_items, next=_next, previous=_prev)
