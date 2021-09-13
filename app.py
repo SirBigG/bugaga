@@ -21,20 +21,6 @@ from models.parser import ParserMap, ParsedItem, AdvertParserMap, Link, Advert
 
 from settings import settings
 
-# TODO: Monkey path remove it after flask-admin is updated
-from flask_admin.contrib.sqla import fields
-from flask_admin._compat import text_type
-from sqlalchemy.orm.util import identity_key
-
-
-def get_pk_from_identity(obj):
-    res = identity_key(instance=obj)
-    cls, key = res[0], res[1]
-    return u':'.join(text_type(x) for x in key)
-
-
-fields.get_pk_from_identity = get_pk_from_identity
-
 # Create application
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY') or '123456790'

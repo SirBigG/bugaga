@@ -1,32 +1,21 @@
-FROM python:3.7.2-alpine3.9
+FROM python:3.9.7-slim
 
 ENV PYTHONUNBUFFERED 1
+ENV PROJECT_DIR /web
 
-RUN apk update && apk add dcron curl wget rsync ca-certificates && rm -rf /var/cache/apk/*
+RUN mkdir $PROJECT_DIR
 
-RUN apk --no-cache add autoconf automake postgresql-dev gcc python3-dev musl-dev g++ \
-                       libxml2-dev \
-                       libxslt-dev \
-                       jpeg-dev \
-                       zlib-dev \
-                       freetype-dev \
-                       lcms2-dev \
-                       openjpeg-dev \
-                       tiff-dev \
-                       tk-dev \
-                       tcl-dev \
-                       build-base \
-                       linux-headers \
-                       pcre-dev \
-                       git \
-                       openblas-dev
+COPY requirements.txt /web/
+RUN apt -y update && \
+    apt install -y --no-install-recommends \
+    libpq-dev \
+    gcc \
+    libjpeg-dev \
+    build-essential \
+    libxml2-dev \
+    libxslt-dev \
+    && \
+    pip install --no-cache-dir -r $PROJECT_DIR/requirements.txt
 
-# Install data science libs
-RUN pip install --no-cache-dir numpy scikit-learn
-
-RUN mkdir /web/
-ADD requirements.txt /web/
-RUN pip install --no-cache-dir -r /web/requirements.txt
-
-WORKDIR web
-ADD . /web/
+WORKDIR $PROJECT_DIR
+COPY . $PROJECT_DIR
