@@ -45,6 +45,17 @@ services:
     ports:
       - 8181:8181
 
+  scheduler:
+    build: .
+    # restart: always
+    command: sh -c "python ./scheduler.py"
+    volumes:
+      - .:/web
+    env_file:
+      - project.env
+    links:
+      - db
+
   db:
     image: postgres:9.6.9-alpine
     volumes:

@@ -55,7 +55,8 @@ async def send_to_telegram(_items):
                 logging.error(f'user_id : {user.telegram_key}. Error - {e}')
         session.close()
 
-if __name__ == "__main__":
+
+def main_task():
     items = parse_items()
     loop = asyncio.get_event_loop()
     loop.run_until_complete(send_to_telegram(items))
@@ -67,3 +68,7 @@ if __name__ == "__main__":
 
     # categorize parsed data
     processing()
+
+
+if __name__ == "__main__":
+    main_task()
