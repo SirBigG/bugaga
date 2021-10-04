@@ -56,9 +56,9 @@ async def send_to_telegram(_items):
         session.close()
 
 
-def main_task():
+async def main_task():
     items = parse_items()
-    asyncio.run(send_to_telegram(items))
+    await send_to_telegram(items)
 
     # parse adverts
     parse_links()
