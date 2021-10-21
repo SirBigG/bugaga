@@ -69,4 +69,4 @@ async def main_task():
 
 
 if __name__ == "__main__":
-    main_task()
+    asyncio.run(main_task(), debug=True)

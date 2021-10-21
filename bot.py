@@ -16,6 +16,7 @@ async def start(chat: Chat, match):
     user = session.query(User).filter_by(telegram_key=str(chat.id)).first()
     if user is None:
         user = User(telegram_key=chat.id)
+    user.is_subscribed = True
     session.add(user)
     session.commit()
     await chat.send_text(
