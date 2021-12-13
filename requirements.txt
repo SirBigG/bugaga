@@ -2,7 +2,7 @@ aiohttp==3.7.4
 SQLAlchemy==1.2.7
 psycopg2==2.9.1
 sqlalchemy-mptt==0.2.2
-lxml==4.6.3
+lxml==4.6.5
 factory_boy
 requests==2.21.0
 passlib==1.7.1
