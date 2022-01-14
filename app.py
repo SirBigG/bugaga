@@ -3,6 +3,7 @@ import os
 import logging
 from datetime import datetime, timedelta
 
+import sqlalchemy.exc
 from flask import Flask, request, jsonify
 from flask.views import MethodView
 
@@ -13,7 +14,7 @@ from wtforms.fields import TextAreaField
 
 from sqlalchemy.orm import sessionmaker, scoped_session
 
-from db import Engine
+from db import Engine, Session
 
 from models.auth import User
 from models.category import Category
@@ -28,7 +29,7 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY') or '123456790'
 if settings.DEBUG:
     app.debug = True
 
-session = scoped_session(sessionmaker(bind=Engine))
+session = Session()
 
 
 class AdvertModelView(ModelView):
@@ -71,7 +72,7 @@ class NewsListView(MethodView):
     per_page = 20
 
     @staticmethod
-    def next_prev_links(page, items_count, request):
+    def next_prev_links(page, items_count):
         _base_url = f"{request.scheme}://{request.host}{request.path}"
         _prev_page = f"{_base_url}?page={page - 1}" if page > 1 else None
         _next_page = f"{_base_url}?page={page + 1}"
@@ -79,13 +80,20 @@ class NewsListView(MethodView):
             _next_page = None
         return _prev_page, _next_page
 
-    def get(self):
+    def get_response(self):
         page = request.args.get('page') or 1
-        query = session.query(ParsedItem)
         _items = [{"data": json.loads(item.data), "created": item.created.strftime("%d.%m.%Y")} for item in
-                  query.order_by(ParsedItem.created.desc()).limit(self.per_page).offset((int(page) - 1) * self.per_page)]
-        _prev, _next = self.next_prev_links(int(page), len(_items), request)
+                  session.query(ParsedItem).order_by(
+                      ParsedItem.created.desc()).limit(self.per_page).offset((int(page) - 1) * self.per_page)]
+        _prev, _next = self.next_prev_links(int(page), len(_items))
         return jsonify(items=_items, next=_next, previous=_prev)
+
+    def get(self):
+        try:
+            return self.get_response()
+        except (sqlalchemy.exc.OperationalError, sqlalchemy.exc.InvalidRequestError):
+            session.rollback()
+            return self.get_response()
 
 
 class AdvertCategories(MethodView):
