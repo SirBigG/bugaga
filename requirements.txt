@@ -6,7 +6,7 @@ lxml==4.6.3
 factory_boy
 requests==2.21.0
 passlib==1.7.1
-pyjwt==1.5.3
+pyjwt==2.4.0
 aiotg==1.0.0
 Flask==2.0.1
 Flask-Admin==1.5.8
