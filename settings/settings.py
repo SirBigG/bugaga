@@ -2,7 +2,6 @@
 import logging
 import os
 
-
 DEBUG_LEVEL = logging.basicConfig(level=logging.DEBUG)
 
 DEBUG = True if 'WORKSPACE' in os.environ and os.environ['WORKSPACE'] == 'DEV' else False
@@ -26,7 +25,6 @@ JWT_EXP_DELTA_SECONDS = 20
 # Bot settings
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN', '')
 
-
 # if 'WORKSPACE' in os.environ and os.environ['WORKSPACE'] == 'DEV':
 #     ENGINE = "sqlite:////web/db.sqlite3"
 # else:
@@ -38,3 +36,5 @@ DO_SPACE_KEY = os.getenv('DO_SPACE_KEY')
 DO_SPACE_SECRET = os.getenv('DO_SPACE_SECRET')
 DO_SPACE_REGION = os.getenv('DO_SPACE_REGION')
 DO_SPACE_NAME = os.getenv('DO_SPACE_NAME')
+
+SCHEDULER_INTERVAL = int(os.getenv('SCHEDULER_INTERVAL', 30))

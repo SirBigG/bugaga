@@ -33,7 +33,6 @@ job_defaults = {
     'max_instances': 5
 }
 
-
 scheduler = AsyncIOScheduler(
     jobstores=jobstores,
     timezone=utc,
@@ -41,7 +40,7 @@ scheduler = AsyncIOScheduler(
 )
 # Delete old jobs from db before added new
 jobstores['default'].remove_all_jobs()
-scheduler.add_job(main_task, 'interval', minutes=30, replace_existing=True)
+scheduler.add_job(main_task, 'interval', minutes=settings.SCHEDULER_INTERVAL, replace_existing=True)
 
 if __name__ == "__main__":
     scheduler.start()

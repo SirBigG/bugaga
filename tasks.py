@@ -17,43 +17,64 @@ from processing import processing
 def parse_items():
     session = Session()
     _items_count = 0
-    for i in session.query(ParserMap).filter(ParserMap.is_active.is_(True)):
-        _items = ParseHandler(i, session).create_items()
-        _items_count += len(_items)
-    # closed session finally
-    session.close()
+    try:
+        for i in session.query(ParserMap).filter(ParserMap.is_active.is_(True)):
+            try:
+                _items = ParseHandler(i, session).create_items()
+                _items_count += len(_items)
+            except Exception as e:
+                logging.error(f"Error - {e}. Host - {i.host}")
+    except Exception as e:
+        logging.error(f"Error in parse_items - {e}")
+    finally:
+        # closed session finally
+        session.close()
     return _items_count
 
 
 def parse_links():
     session = Session()
-    for i in session.query(AdvertParserMap).filter(AdvertParserMap.is_active.is_(True), AdvertParserMap.content_type == 1):
-        LinkParseHandler(i, session).create_items()
-    session.close()
+    try:
+        for i in session.query(AdvertParserMap).filter(AdvertParserMap.is_active.is_(True),
+                                                       AdvertParserMap.content_type == 1):
+            LinkParseHandler(i, session).create_items()
+    except Exception as e:
+        logging.error(f"Error in parse_links - {e}")
+    finally:
+        session.close()
 
 
 def parse_advert():
     session = Session()
-    for i in session.query(AdvertParserMap).filter(AdvertParserMap.is_active.is_(True), AdvertParserMap.content_type == 2):
-        AdvertParseHandler(i, session).create_adverts()
-    session.close()
+    try:
+        for i in session.query(AdvertParserMap).filter(AdvertParserMap.is_active.is_(True),
+                                                       AdvertParserMap.content_type == 2):
+            AdvertParseHandler(i, session).create_adverts()
+    except Exception as e:
+        logging.error(f"Error in parse_advert - {e}")
+    finally:
+        session.close()
 
 
 async def send_to_telegram(_items):
     if _items:
         session = Session()
         to_send = ""
-        for item in session.query(ParsedItem).order_by(ParsedItem.created.desc()).limit(3):
-            to_send = f"{to_send}<b>{json.loads(item.data).get('title', '')}</b> \n"
-        for user in session.query(User).filter_by(is_subscribed=True).all():
-            from bot import bot
-            try:
-                private = bot.private(str(user.telegram_key))
-                await private.send_text(f"{to_send} \n<a href='https://agromega.in.ua/news/'>Докладніше</a>",
+        try:
+            for item in session.query(ParsedItem).order_by(ParsedItem.created.desc()).limit(3):
+                to_send = f"{to_send}<b>{json.loads(item.data).get('title', '')}</b> \n"
+            for user in session.query(User).filter_by(is_subscribed=True).all():
+                from bot import bot
+                try:
+                    private = bot.private(str(user.telegram_key))
+                    await private.send_text(f"{to_send} \n<a href='https://agromega.in.ua/news/'>Докладніше</a>",
                                         parse_mode="HTML")
-            except Exception as e:
-                logging.error(f'user_id : {user.telegram_key}. Error - {e}')
-        session.close()
+                except Exception as e:
+                    logging.error(f'Error send to telegram - {e}. User - {user.id}')
+        except Exception as e:
+            logging.error(f'Error send to telegram - {e}')
+        finally:
+            session.close()
 
 
 async def main_task():

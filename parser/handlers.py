@@ -20,13 +20,11 @@ from models.parser import ParsedItem, Advert, Link
 
 from settings import settings
 
-
 session = boto3.session.Session()
 client = session.client('s3', region_name=settings.DO_SPACE_REGION,
                         endpoint_url=f'https://{settings.DO_SPACE_REGION}.digitaloceanspaces.com',
                         aws_access_key_id=settings.DO_SPACE_KEY,
                         aws_secret_access_key=settings.DO_SPACE_SECRET)
-
 
 WIDTH = 320
 HEIGHT = 230
@@ -40,25 +38,27 @@ def _load_image(item, folder_name):
             img = Image.open(BytesIO(response.content))
             hsize = int(float(img.size[1]) * float(WIDTH) / float(img.size[0]))
             if hsize >= HEIGHT:
-                img = img.resize((WIDTH, hsize), Image.ANTIALIAS)
+                img = img.resize((WIDTH, hsize), Image.LANCZOS)
                 delta = hsize - HEIGHT if hsize > HEIGHT else 0
                 img = img.crop((0, delta / 2, WIDTH, hsize - (delta / 2)))
             elif hsize < HEIGHT:
                 wsize = int(float(img.size[0]) * float(HEIGHT) / float(img.size[1]))
-                img = img.resize((wsize, HEIGHT), Image.ANTIALIAS)
+                img = img.resize((wsize, HEIGHT), Image.LANCZOS)
                 delta = wsize - WIDTH if wsize > WIDTH else 0
                 img = img.crop((delta / 2, 0, wsize - (delta / 2), HEIGHT))
             else:
                 # If not height resize with auto height
-                img = img.resize((WIDTH, hsize), Image.ANTIALIAS)
+                img = img.resize((WIDTH, hsize), Image.LANCZOS)
             output = BytesIO()
-            img.save(output, 'JPEG', quality=75)
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+            img.save(output, 'webp', quality=75)
             output.seek(0)
             filename = uuid.uuid4()
-            client.upload_fileobj(output, settings.DO_SPACE_NAME, f'{folder_name}/{filename}.jpg',
-                                  ExtraArgs={'ContentType': 'image/jpeg', 'ACL': 'public-read'})
+            client.upload_fileobj(output, settings.DO_SPACE_NAME, f'{folder_name}/{filename}.webp',
+                                  ExtraArgs={'ContentType': 'image/webp', 'ACL': 'public-read'})
             item['image'] = \
-                f"https://{settings.DO_SPACE_NAME}.{settings.DO_SPACE_REGION}.digitaloceanspaces.com/{folder_name}/{filename}.jpg"
+                f"https://{settings.DO_SPACE_NAME}.{settings.DO_SPACE_REGION}.digitaloceanspaces.com/{folder_name}/{filename}.webp"
         except Exception as e:
             logging.error(e)
     return item
@@ -82,7 +82,8 @@ def load_images(items, func):
 def delete_old_images(offset=0):
     _session = db.Session()
     for item in _session.query(Advert).filter(
-            Advert.created < datetime.now() - timedelta(days=8)).order_by(Advert.created.desc()).limit(1000).offset(offset):
+            Advert.created < datetime.now() - timedelta(days=8)).order_by(Advert.created.desc()).limit(1000).offset(
+        offset):
         data = json.loads(item.data)
         image = data.pop("image", '')
         if image and f"https://{settings.DO_SPACE_NAME}.{settings.DO_SPACE_REGION}.digitaloceanspaces.com" in image:
@@ -165,7 +166,8 @@ class LinkParseHandler(ParseHandler):
 
 class AdvertParseHandler(ParseHandler):
     def create_adverts(self):
-        for link in self.session.query(Link).filter(Link.is_parsed.is_(False)).filter(Link.link.contains(self.map.host)):
+        for link in self.session.query(Link).filter(Link.is_parsed.is_(False)).filter(
+                Link.link.contains(self.map.host)):
             item = PARSERS.get(self.map.type)(self.map, link=link.link).get_item()
             if item:
                 _load_image(item, 'adv')
