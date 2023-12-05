@@ -9,6 +9,8 @@ from typing import Optional
 
 import aiohttp
 
+import markdown
+
 from sqlalchemy import func
 
 from transliterate import slugify
@@ -130,10 +132,11 @@ async def create_day_news_summary(created_date: date = date.today()):
                 _summary = _summary.get("choices")[0].get("message", {}).get("content", "")
                 if not _summary:
                     return
+                _summary_html = markdown.markdown(_summary)
                 # Create summary news
                 _news_obj = News(
                     title=f"Підсумок новин за день {created_date}",
-                    description=_summary,
+                    description=_summary_html,
                     created=created_datetime,
                 )
                 session.add(_news_obj)
