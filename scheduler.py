@@ -9,7 +9,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from settings import settings
 
-from tasks import main_task
+from tasks import main_task, create_day_news_summary
 
 logger = logging.getLogger('apscheduler.scheduler')
 logger.setLevel(logging.DEBUG)
@@ -41,6 +41,7 @@ scheduler = AsyncIOScheduler(
 # Delete old jobs from db before added new
 jobstores['default'].remove_all_jobs()
 scheduler.add_job(main_task, 'interval', minutes=settings.SCHEDULER_INTERVAL, replace_existing=True)
+scheduler.add_job(create_day_news_summary, 'cron', hour=19, minute=00, replace_existing=True)
 
 if __name__ == "__main__":
     scheduler.start()

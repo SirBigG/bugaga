@@ -11,7 +11,7 @@ class ParserMap(Base):
     __tablename__ = 'parsermap'
 
     id = Column(Integer, primary_key=True)
-    category_id = Column(Integer, ForeignKey(Category.id), nullable=False)
+    category_id = Column(Integer, ForeignKey(Category.id), nullable=True)
     category = relationship(Category)  # , backref=backref('category', lazy='dynamic'))
     host = Column(String(255), nullable=False)
     link = Column(String, nullable=False)
@@ -34,7 +34,7 @@ class ParsedItem(Base):
     id = Column(Integer, primary_key=True)
     data = Column(String, nullable=False)
     hash = Column(String(255), nullable=False)
-    category_id = Column(Integer, ForeignKey(Category.id), nullable=False)
+    category_id = Column(Integer, ForeignKey(Category.id), nullable=True)
     created = Column(DateTime, default=datetime.now)
 
     def __repr__(self):

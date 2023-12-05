@@ -38,3 +38,6 @@ DO_SPACE_REGION = os.getenv('DO_SPACE_REGION')
 DO_SPACE_NAME = os.getenv('DO_SPACE_NAME')
 
 SCHEDULER_INTERVAL = int(os.getenv('SCHEDULER_INTERVAL', 30))
+
+# OpenAI API key
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')

@@ -1,10 +1,11 @@
+import http
 import json
 import os
 import logging
 from datetime import datetime, timedelta
 
 import sqlalchemy.exc
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from flask.views import MethodView
 
 from flask_admin import Admin
@@ -19,6 +20,7 @@ from db import Engine, Session
 from models.auth import User
 from models.category import Category
 from models.parser import ParserMap, ParsedItem, AdvertParserMap, Link, Advert
+from models.news import News
 
 from settings import settings
 
@@ -96,6 +98,20 @@ class NewsListView(MethodView):
             return self.get_response()
 
 
+class NewsObjectView(MethodView):
+
+    def get(self, uid):
+        _object = session.query(News).filter_by(id=uid).first()
+        if _object:
+            return jsonify({
+                "title": _object.title,
+                "description": _object.description,
+                "image": _object.image,
+                "created": _object.created.isoformat()
+            })
+        return Response(status=http.HTTPStatus.NOT_FOUND)
+
+
 class AdvertCategories(MethodView):
     def get(self):
         query = session.query(Advert).filter(
@@ -112,7 +128,7 @@ class SendAdminTelegram(MethodView):
                 private = bot.private(str(user.telegram_key))
                 private.send_text(request.json.get("message"))
             except Exception as e:
-               logging.error(f'user_id : {user.telegram_key}. Error - {e}')
+                logging.error(f'user_id : {user.telegram_key}. Error - {e}')
         return jsonify(message="OK")
 
 
@@ -131,6 +147,20 @@ class ParserMapModelView(ModelView):
         "map": TextAreaField
     }
 
+    form_excluded_columns = ["category", "category_id"]
+
+
+class NewsModelView(ModelView):
+    form_widget_args = {
+        'description': {
+            'rows': 50
+        }
+    }
+
+    form_overrides = {
+        "description": TextAreaField
+    }
+
 
 # Create admin
 admin = Admin(app, name='microblog', template_mode='bootstrap3', url="/admin/advert")
@@ -141,9 +171,11 @@ admin.add_view(ModelView(ParsedItem, session))
 admin.add_view(ParserMapModelView(AdvertParserMap, session))
 admin.add_view(LinkModelView(Link, session))
 admin.add_view(AdvertModelView(Advert, session))
+admin.add_view(NewsModelView(News, session))
 
 # API urls
 app.add_url_rule('/adverts', view_func=AdvertListView.as_view('advert_list'))
 app.add_url_rule('/news', view_func=NewsListView.as_view('news_list'))
+app.add_url_rule('/news/<uid>', view_func=NewsObjectView.as_view('news_object'))
 app.add_url_rule('/categories', view_func=AdvertCategories.as_view('category_list'))
 app.add_url_rule('/telegram/admin', view_func=SendAdminTelegram.as_view('send_admin_telegram'))
