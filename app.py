@@ -112,6 +112,15 @@ class NewsObjectView(MethodView):
         return Response(status=http.HTTPStatus.NOT_FOUND)
 
 
+class NewsSitemapView(MethodView):
+
+    def get(self):
+        _items = [{"loc": json.loads(item.data)["link"], "lastmod": item.created.isoformat()} for item in
+                  session.query(ParsedItem).filter(ParsedItem.data.contains("https://agromega.in.ua")).order_by(
+                      ParsedItem.created.desc())]
+        return jsonify(items=_items)
+
+
 class AdvertCategories(MethodView):
     def get(self):
         query = session.query(Advert).filter(
@@ -176,6 +185,7 @@ admin.add_view(NewsModelView(News, session))
 # API urls
 app.add_url_rule('/adverts', view_func=AdvertListView.as_view('advert_list'))
 app.add_url_rule('/news', view_func=NewsListView.as_view('news_list'))
+app.add_url_rule('/news/sitemap', view_func=NewsSitemapView.as_view('news_sitemap'))
 app.add_url_rule('/news/<uid>', view_func=NewsObjectView.as_view('news_object'))
 app.add_url_rule('/categories', view_func=AdvertCategories.as_view('category_list'))
 app.add_url_rule('/telegram/admin', view_func=SendAdminTelegram.as_view('send_admin_telegram'))

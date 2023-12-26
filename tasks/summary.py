@@ -42,9 +42,10 @@ async def generate_summary(news_titles: list[str]) -> Optional[dict]:
             return await response.json()
 
 
-async def create_day_news_summary(created_date: date = date.today()):
+async def create_day_news_summary(created_date: date = None):
+    created_date = created_date or date.today()
     session = Session()
-    created_datetime = datetime(created_date.year, created_date.month, created_date.day, 19, 0, 0)
+    created_datetime = datetime(created_date.year, created_date.month, created_date.day, 18, 0, 0)
     try:
         # get today news
         _news = []
