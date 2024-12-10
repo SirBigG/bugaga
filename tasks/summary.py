@@ -21,15 +21,16 @@ from models.parser import ParsedItem
 
 
 async def generate_summary(news_titles: list[str]) -> Optional[dict]:
-    prompt = "Створи підсумок за наступними заголовками новин на приблизно 500 слів: \n" + "\n".join(news_titles)
+    prompt = ("Створи короткий і цікавий підсумок головних новин дня,"
+              " акцентуючи увагу на ключових подіях та їх важливості."
+              " Ocь список новин: \n") + "\n".join(news_titles)
     async with aiohttp.ClientSession() as session:
         async with session.post(
                 "https://api.openai.com/v1/chat/completions",
                 headers={"Authorization": f"Bearer {settings.OPENAI_API_KEY}",
                          "Content-Type": "application/json"},
                 json={
-                    "model": "gpt-4-1106-preview",
-                    # "model": "gpt-3.5-turbo-1106",
+                    "model": "gpt-4o",
                     "messages": [
                         {
                             "role": "user",
