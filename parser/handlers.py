@@ -20,6 +20,9 @@ from models.parser import ParsedItem, Advert, Link
 
 from settings import settings
 
+
+logging.getLogger('boto3').setLevel(logging.WARNING)
+
 session = boto3.session.Session()
 client = session.client('s3', region_name=settings.DO_SPACE_REGION,
                         endpoint_url=f'https://{settings.DO_SPACE_REGION}.digitaloceanspaces.com',
