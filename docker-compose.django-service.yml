@@ -21,6 +21,7 @@ services:
     environment:
       DJANGO_SETTINGS_MODULE: config.settings.production
       POSTGRES_HOST: db
+      PYTHONPATH: /app/src
       OMP_NUM_THREADS: "1"
       OPENBLAS_NUM_THREADS: "1"
     depends_on:
@@ -64,6 +65,7 @@ services:
     environment:
       DJANGO_SETTINGS_MODULE: config.settings.production
       POSTGRES_HOST: db
+      PYTHONPATH: /app/src
       OMP_NUM_THREADS: "1"
       OPENBLAS_NUM_THREADS: "1"
     depends_on:
@@ -92,6 +94,7 @@ services:
     environment:
       DJANGO_SETTINGS_MODULE: config.settings.production
       POSTGRES_HOST: db
+      PYTHONPATH: /app/src
     depends_on:
       - db
       - redis
