@@ -44,7 +44,7 @@ services:
       retries: 10
     restart: unless-stopped
 
-  celery-worker-next:
+  celery-worker:
     profiles: ["modernization"]
     image: ${BUGAGA_DJANGO_IMAGE:-sirbigg/bugaga:django-latest}
     build:
@@ -65,7 +65,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-  celery-beat-next:
+  celery-beat:
     profiles: ["modernization"]
     image: ${BUGAGA_DJANGO_IMAGE:-sirbigg/bugaga:django-latest}
     build:

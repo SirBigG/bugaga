@@ -1,35 +1,4 @@
 services:
-  # core:
-  #   build: .
-  #   volumes:
-  #      - .:/web
-  #   ports:
-  #     - 8888:8888
-
-  #   env_file:
-  #     - project.env
-
-  bot:
-    build: .
-    # restart: always
-    command: sh -c "python bot.py"
-    volumes:
-      - .:/web
-    links:
-      - db
-    env_file:
-      - project.env
-
-#  cron:
-#    build: .
-#    restart: always
-#    command: sh -c "touch /var/log/cron.log && crond && tail -f /var/log/cron.log"
-#    volumes:
-#      - .:/web
-#      - /var/log:/var/log
-#    env_file:
-#      - project.env
-
   admin:
     build: .
     # restart: always
@@ -42,17 +11,6 @@ services:
       - db
     ports:
       - 8181:8181
-
-  scheduler:
-    build: .
-    # restart: always
-    command: sh -c "python ./scheduler.py"
-    volumes:
-      - .:/web
-    env_file:
-      - project.env
-    links:
-      - db
 
   db:
     image: postgres:16.0-alpine

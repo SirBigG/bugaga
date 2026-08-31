@@ -61,11 +61,11 @@ shell:
 dev:
     {{ python }} manage.py runserver 0.0.0.0:8000 --settings=config.settings.development
 
-# Validate the merged legacy and Django Compose configuration.
+# Validate the merged base and Django Compose configuration.
 compose-check:
     {{ django_compose }} config --quiet
 
-# Start the Django service beside the legacy service on 127.0.0.1:8282.
+# Start the Django service on 127.0.0.1:8282.
 up:
     {{ django_compose }} up --build django
 
@@ -73,25 +73,25 @@ up:
 start:
     {{ django_compose }} up -d --build django
 
-# Start the next-generation Celery worker, beat, and Redis broker locally.
+# Start the Celery worker, beat, and Redis broker locally.
 workers-start:
-    {{ django_compose }} up -d --build redis celery-worker-next celery-beat-next
+    {{ django_compose }} up -d --build redis celery-worker celery-beat
 
 # Install/update worker schedules without changing their enabled state.
 workers-schedules:
     {{ django_compose }} exec django python manage.py install_worker_schedules --settings=config.settings.production
 
-# Enable all managed schedules only after stopping legacy bot and scheduler.
+# Enable all managed schedules.
 workers-enable:
     {{ django_compose }} exec django python manage.py install_worker_schedules --enable --settings=config.settings.production
 
-# Disable all managed schedules before rolling back to legacy processes.
+# Disable all managed schedules for maintenance or rollback.
 workers-disable:
     {{ django_compose }} exec django python manage.py install_worker_schedules --disable --settings=config.settings.production
 
 # Stop the parallel Django service and its database dependency.
 stop:
-    {{ django_compose }} stop django celery-beat-next celery-worker-next redis db
+    {{ django_compose }} stop django celery-beat celery-worker redis db
 
 # Show service status.
 ps:
@@ -103,11 +103,11 @@ logs:
 
 # Follow worker, beat, and broker logs.
 workers-logs:
-    {{ django_compose }} logs -f celery-worker-next celery-beat-next redis
+    {{ django_compose }} logs -f celery-worker celery-beat redis
 
 # Show tasks currently executing in the Celery worker.
 workers-active:
-    {{ django_compose }} exec celery-worker-next celery -A config inspect active
+    {{ django_compose }} exec celery-worker celery -A config inspect active
 
 # Build the Django production image.
 build:
@@ -120,35 +120,35 @@ publish tag:
 
 # Pull a published Django image on the production server.
 pull:
-    {{ production_compose }} pull django redis celery-worker-next celery-beat-next
+    {{ production_compose }} pull django redis celery-worker celery-beat
 
 # Start the already-pulled Django image without building on the server.
 deploy:
     {{ production_compose }} up -d --no-build django
 
-# Start the already-pulled worker stack. Schedules remain disabled until explicitly enabled.
+# Start the already-pulled worker stack without changing database schedule state.
 deploy-workers:
-    {{ production_compose }} up -d --no-build redis celery-worker-next celery-beat-next
+    {{ production_compose }} up -d --no-build redis celery-worker celery-beat
 
 # Install/update production worker schedules without changing their enabled state.
 production-workers-schedules:
     {{ production_compose }} exec django python manage.py install_worker_schedules --settings=config.settings.production
 
-# Enable all production schedules after both corresponding legacy processes have stopped.
+# Enable all production schedules.
 production-workers-enable:
     {{ production_compose }} exec django python manage.py install_worker_schedules --enable --settings=config.settings.production
 
-# Disable all production schedules before rolling back to legacy processes.
+# Disable all production schedules before maintenance or an image rollback.
 production-workers-disable:
     {{ production_compose }} exec django python manage.py install_worker_schedules --disable --settings=config.settings.production
 
 # Follow production worker stack logs.
 production-workers-logs:
-    {{ production_compose }} logs -f celery-worker-next celery-beat-next redis
+    {{ production_compose }} logs -f celery-worker celery-beat redis
 
 # Show tasks currently executing in the production Celery worker.
 production-workers-active:
-    {{ production_compose }} exec celery-worker-next celery -A config inspect active
+    {{ production_compose }} exec celery-worker celery -A config inspect active
 
 # Run the legacy unittest suite in its existing container image.
 legacy-test:

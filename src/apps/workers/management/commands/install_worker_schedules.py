@@ -4,19 +4,19 @@ from django_celery_beat.models import CrontabSchedule, IntervalSchedule, Periodi
 
 
 class Command(BaseCommand):
-    help = "Create or update disabled-by-default Celery Beat schedules for the legacy workload."
+    help = "Create or update disabled-by-default Celery Beat schedules."
 
     def add_arguments(self, parser):
         state = parser.add_mutually_exclusive_group()
         state.add_argument(
             "--enable",
             action="store_true",
-            help="Enable schedules immediately. Do not use until the legacy scheduler has stopped.",
+            help="Enable all managed schedules immediately.",
         )
         state.add_argument(
             "--disable",
             action="store_true",
-            help="Disable all managed schedules before rolling back to legacy processes.",
+            help="Disable all managed schedules for maintenance or rollback.",
         )
 
     def _upsert(self, name, defaults, options):

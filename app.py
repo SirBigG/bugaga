@@ -1,7 +1,6 @@
 import http
 import json
 import os
-import logging
 from datetime import datetime, timedelta
 
 import sqlalchemy.exc
@@ -129,18 +128,6 @@ class AdvertCategories(MethodView):
         return jsonify(_items)
 
 
-class SendAdminTelegram(MethodView):
-    def post(self):
-        for user in session.query(User).filter_by(is_admin=True).all():
-            from bot import bot
-            try:
-                private = bot.private(str(user.telegram_key))
-                private.send_text(request.json.get("message"))
-            except Exception as e:
-                logging.error(f'user_id : {user.telegram_key}. Error - {e}')
-        return jsonify(message="OK")
-
-
 class LinkModelView(ModelView):
     column_searchable_list = ["link"]
 
@@ -188,4 +175,3 @@ app.add_url_rule('/news', view_func=NewsListView.as_view('news_list'))
 app.add_url_rule('/news/sitemap', view_func=NewsSitemapView.as_view('news_sitemap'))
 app.add_url_rule('/news/<uid>', view_func=NewsObjectView.as_view('news_object'))
 app.add_url_rule('/categories', view_func=AdvertCategories.as_view('category_list'))
-app.add_url_rule('/telegram/admin', view_func=SendAdminTelegram.as_view('send_admin_telegram'))

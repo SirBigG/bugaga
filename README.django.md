@@ -1,8 +1,8 @@
-# AgroMega API Django migration
+# AgroMega API Django service
 
-The Django service runs alongside the legacy Flask/aiohttp application during migration. The API and Admin have moved
-to Django; the legacy `bot` and `scheduler` remain production entrypoints until the Celery schedules described below
-are explicitly enabled.
+The production API, Admin, Telegram bot, parsing pipeline, and daily summary run on Django and Celery. The remaining
+Flask/aiohttp source is retained only for compatibility during the final API cleanup; it is not the production worker
+runtime.
 
 ## Target runtime
 
@@ -39,13 +39,12 @@ just workers-logs
 ```
 
 `workers-schedules` creates or updates all managed schedules but leaves their current enabled state unchanged. New
-schedules are disabled. `just workers-enable` is intentionally separate and must not be used while the matching legacy
-processes are still running.
+schedules are disabled. Use `just workers-enable` only after the environment and required secrets are ready.
 
 ## Docker Hub deployment
 
-The legacy `sirbigg/bugaga:latest` image continues to run `bot` and `scheduler` during the migration. Django and its
-Celery worker/beat processes use one image built from `Dockerfile.django` and published under a separate immutable tag:
+Django and its Celery worker/beat processes use one image built from `Dockerfile.django` and published under an
+immutable tag:
 
 ```bash
 just publish django-YYYYMMDD-N
@@ -79,9 +78,9 @@ after increasing available memory.
 The Django Ninja documentation is available at `/docs`, health at `/health`, and the OIDC-protected administration at
 `/admin/`.
 
-## Bot and scheduler migration
+## Celery workloads
 
-The replacement keeps the externally visible behavior but removes the unsupported Python 3.11 runtime dependencies:
+The Celery workloads preserve the externally visible behavior of the retired standalone bot and scheduler:
 
 - `bugaga.poll_telegram` polls Telegram every five seconds through Celery Beat. There is no separate bot container.
   The last processed Telegram `update_id` is stored in the Django-owned `workers_workerstate` table.
@@ -104,31 +103,29 @@ upstream commit `8049336cf61c38a281244fba2431caf438e93b73`, which added Django 6
 merged after all checks passed. Replace the Git dependency with the next compatible PyPI release once available; do
 not silently override the released package's dependency metadata.
 
-### Staged production rollout
+### Production operations
 
-All steps use the immutable Django image. They do not require an API or PostgreSQL outage.
+Keep `BUGAGA_BOT_ENABLED=true` and `BUGAGA_SCHEDULER_ENABLED=true` in production. They are operational kill switches:
+changing either value requires recreating `celery-worker` because editing `project.env` does not change an existing
+container.
 
-1. Keep `BUGAGA_BOT_ENABLED=false` and `BUGAGA_SCHEDULER_ENABLED=false` in `project.env`.
-2. Deploy the new Django image first. Its normal `migrate` step creates only Django/Celery schedule tables and
-   `workers_workerstate`; unmanaged legacy tables are not changed.
-3. Run `just deploy-workers`, `just production-workers-schedules`, and inspect `just production-workers-logs`. Confirm exactly one
-   `celery-beat-next` container is running. The worker is inert because schedules and feature flags are disabled.
-4. Bot cutover: stop only the legacy `bot`; set `BUGAGA_BOT_ENABLED=true`; recreate `celery-worker-next`; then enable
-   only **AgroMega Telegram polling** in Django Admin. Send `/start` from a test chat and confirm the user is subscribed.
-5. Scheduler cutover: wait for the current legacy scheduler cycle to finish and stop only legacy `scheduler`; set
-   `BUGAGA_SCHEDULER_ENABLED=true`; recreate `celery-worker-next`; then enable **AgroMega parsing pipeline** and
-   **AgroMega daily news summary** in Admin. Verify one cycle's counts, Telegram delivery, images, classifications, and
-   summary timing before removing the old containers.
+For a routine immutable-image deployment:
 
-Changing `project.env` does not change an already running container. Recreate the worker after each flag change.
-Schedules can also be enabled together with `just production-workers-enable`, but Admin is safer for the independent cutovers.
+1. Run `just pull`, `just deploy`, and `just deploy-workers`.
+2. Run `just production-workers-schedules` to reconcile the database schedules without changing their enabled state.
+3. Confirm exactly one `celery-beat` container is running and inspect `just production-workers-logs`.
+4. Verify Telegram polling plus one parsing and summary cycle after a workload change.
+
+The service names were finalized from `celery-worker-next`/`celery-beat-next` to `celery-worker`/`celery-beat`. During
+that one-time Compose update, disable the periodic schedules and stop/remove the old `*-next` containers before
+starting the renamed services. Never allow both Beat containers to run concurrently.
 
 ### Rollback
 
 Disable the affected PeriodicTask in Admin first (or use `just production-workers-disable` for all three). Check
-`just production-workers-active` and `just production-workers-logs`; wait for any active pipeline task to finish before restarting the corresponding legacy
-container; the advisory lock cannot coordinate with legacy SQLAlchemy code. Set the feature flag back to `false` and
-recreate the worker. API/Admin and Redis can remain online throughout rollback.
+`just production-workers-active` and `just production-workers-logs`, then wait for any active pipeline task to finish.
+Set the affected feature flag to `false`, recreate the worker, and roll the immutable image tag back if necessary.
+API/Admin and Redis can remain online throughout an application-image rollback.
 
 ## Production schema capture
 
@@ -138,7 +135,7 @@ Run from the directory containing the production Compose file:
 just schema-dump
 ```
 
-Create a full, private backup immediately before cutover:
+Create a full, private backup before a database migration or other high-risk maintenance:
 
 ```bash
 just backup
@@ -146,13 +143,13 @@ just backup
 
 Neither file may be committed. The full dump contains production data, including Telegram identifiers.
 
-### Database upgrade prerequisite
+### Migrating an old PostgreSQL 9.6 environment
 
 The captured production dump reports PostgreSQL 9.6.9, while Django 6.1 requires PostgreSQL 15 or newer. Do not mount
 the existing PostgreSQL 9.6 `data/` directory into the PostgreSQL 16 container. The supported cutover is a logical
 backup and restore into a new empty PostgreSQL 16 volume:
 
-1. Stop all legacy writers (`bot`, `scheduler`, and `admin`) for the final backup window.
+1. Disable Celery schedules and stop all application writers for the final backup window.
 2. Create the final custom-format backup with `just backup`.
 3. Restore it into a new empty PostgreSQL 16 database with `pg_restore --no-owner --no-privileges`.
 4. Run `python manage.py migrate --settings=config.settings.production`; unmanaged legacy tables are not altered.
