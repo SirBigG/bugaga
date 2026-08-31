@@ -1,0 +1,40 @@
+services:
+  django:
+    image: ${BUGAGA_DJANGO_IMAGE:-sirbigg/bugaga:django-latest}
+    # Compatibility override for the production host's runc/user-namespace setup.
+    user: "0:0"
+    restart: always
+    mem_limit: 256m
+    mem_reservation: 128m
+    mem_swappiness: 60
+    pids_limit: 96
+    command:
+      - sh
+      - -c
+      - >-
+        python manage.py migrate --settings=config.settings.production &&
+        python manage.py collectstatic --noinput --settings=config.settings.production &&
+        exec gunicorn --chdir src --bind 0.0.0.0:8000 --workers 1
+        --max-requests 1000 --max-requests-jitter 100 config.wsgi:application
+    env_file:
+      - project.env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      POSTGRES_HOST: db
+    depends_on:
+      db:
+        condition: service_started
+    ports:
+      - "127.0.0.1:8282:8000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import socket; socket.create_connection(('127.0.0.1', 8000), timeout=2).close()",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s

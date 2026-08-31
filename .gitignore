@@ -9,6 +9,12 @@ nohup.out
 env/
 .idea/
 db.sqlite3
+.venv/
+.pytest_cache/
+.ruff_cache/
+staticfiles/
+bugaga-schema.sql
+bugaga-production.dump
 
 project.env
 data/

@@ -1,0 +1,29 @@
+services:
+  db:
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  django:
+    profiles: ["modernization"]
+    image: ${BUGAGA_DJANGO_IMAGE:-sirbigg/bugaga:django-latest}
+    build:
+      context: .
+      dockerfile: Dockerfile.django
+    env_file:
+      - project.env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8282:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
