@@ -21,6 +21,8 @@ services:
     environment:
       DJANGO_SETTINGS_MODULE: config.settings.production
       POSTGRES_HOST: db
+      OMP_NUM_THREADS: "1"
+      OPENBLAS_NUM_THREADS: "1"
     depends_on:
       db:
         condition: service_started
@@ -38,3 +40,66 @@ services:
       timeout: 5s
       retries: 3
       start_period: 30s
+
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "64mb", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - celery-redis-data:/data
+    restart: always
+    mem_limit: 96m
+    mem_reservation: 32m
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  celery-worker-next:
+    image: ${BUGAGA_DJANGO_IMAGE:-sirbigg/bugaga:django-latest}
+    user: "0:0"
+    command: ["celery", "-A", "config", "worker", "--loglevel=INFO", "--pool=threads", "--concurrency=2"]
+    env_file:
+      - project.env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      POSTGRES_HOST: db
+      OMP_NUM_THREADS: "1"
+      OPENBLAS_NUM_THREADS: "1"
+    depends_on:
+      - db
+      - redis
+    restart: always
+    mem_limit: 384m
+    mem_reservation: 192m
+    mem_swappiness: 60
+    pids_limit: 96
+
+  celery-beat-next:
+    image: ${BUGAGA_DJANGO_IMAGE:-sirbigg/bugaga:django-latest}
+    user: "0:0"
+    command:
+      [
+        "celery",
+        "-A",
+        "config",
+        "beat",
+        "--loglevel=INFO",
+        "--scheduler=django_celery_beat.schedulers:DatabaseScheduler",
+      ]
+    env_file:
+      - project.env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      POSTGRES_HOST: db
+    depends_on:
+      - db
+      - redis
+    restart: always
+    mem_limit: 160m
+    mem_reservation: 64m
+    mem_swappiness: 60
+    pids_limit: 64
+
+volumes:
+  celery-redis-data:

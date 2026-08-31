@@ -16,6 +16,8 @@ services:
       - project.env
     environment:
       DJANGO_SETTINGS_MODULE: config.settings.production
+      OMP_NUM_THREADS: "1"
+      OPENBLAS_NUM_THREADS: "1"
     depends_on:
       db:
         condition: service_healthy
@@ -27,3 +29,65 @@ services:
       timeout: 5s
       retries: 3
     restart: unless-stopped
+
+  redis:
+    profiles: ["modernization"]
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "64mb", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - celery-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  celery-worker-next:
+    profiles: ["modernization"]
+    image: ${BUGAGA_DJANGO_IMAGE:-sirbigg/bugaga:django-latest}
+    build:
+      context: .
+      dockerfile: Dockerfile.django
+    command: ["celery", "-A", "config", "worker", "--loglevel=INFO", "--pool=threads", "--concurrency=2"]
+    env_file:
+      - project.env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      OMP_NUM_THREADS: "1"
+      OPENBLAS_NUM_THREADS: "1"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  celery-beat-next:
+    profiles: ["modernization"]
+    image: ${BUGAGA_DJANGO_IMAGE:-sirbigg/bugaga:django-latest}
+    build:
+      context: .
+      dockerfile: Dockerfile.django
+    command:
+      [
+        "celery",
+        "-A",
+        "config",
+        "beat",
+        "--loglevel=INFO",
+        "--scheduler=django_celery_beat.schedulers:DatabaseScheduler",
+      ]
+    env_file:
+      - project.env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  celery-redis-data:
