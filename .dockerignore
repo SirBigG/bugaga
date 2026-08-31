@@ -8,6 +8,5 @@ data/
 project.env
 bugaga-schema.sql
 bugaga-production.dump
-Dockerfile
 docker-compose.yml
 __pycache__

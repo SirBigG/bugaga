@@ -1,8 +1,7 @@
 # AgroMega API Django service
 
-The production API, Admin, Telegram bot, parsing pipeline, and daily summary run on Django and Celery. The remaining
-Flask/aiohttp source is retained only for compatibility during the final API cleanup; it is not the production worker
-runtime.
+The production API, Admin, Telegram bot, parsing pipeline, and daily summary run entirely on Django and Celery. The
+retired Flask/aiohttp/SQLAlchemy runtime and its standalone bot and scheduler have been removed.
 
 ## Target runtime
 
@@ -14,8 +13,9 @@ runtime.
 - Celery 5.6 with Redis as a small durable broker
 - Celery Beat schedules stored in PostgreSQL and managed from Django Admin
 
-The existing data tables are represented by unmanaged Django models. Django migrations must only create Django auth,
-session, admin-log, content-type, and local OIDC identity tables.
+The existing catalog data tables are represented by unmanaged Django models in `apps.legacy`; the name describes their
+database origin, not an active legacy runtime. Django migrations must only create Django auth, session, admin-log,
+content-type, local OIDC identity, worker-state, and Celery schedule tables.
 
 ## Local checks
 
@@ -176,7 +176,7 @@ forward `Host` and `X-Forwarded-Proto`, and only Nginx should expose the service
 
 ## Compatibility endpoints
 
-The first release preserves the routes and response shapes consumed by `am-core`:
+The service preserves the routes and response shapes consumed by `am-core`:
 
 - `GET /news`
 - `GET /news/<id>`
@@ -184,5 +184,5 @@ The first release preserves the routes and response shapes consumed by `am-core`
 - `GET /adverts`
 - `GET /categories`
 
-The obsolete aiohttp registration/login API and the unauthenticated `/telegram/admin` endpoint are not part of the new
+The retired aiohttp registration/login API and the unauthenticated `/telegram/admin` endpoint are not part of the
 public API.

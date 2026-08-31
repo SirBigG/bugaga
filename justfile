@@ -5,7 +5,7 @@ python := repo_dir + "/.venv/bin/python"
 pytest := repo_dir + "/.venv/bin/pytest"
 ruff := repo_dir + "/.venv/bin/ruff"
 compose := "docker compose --project-directory " + repo_dir + " -f " + repo_dir + "/docker-compose.yml"
-django_compose := compose + " -f " + repo_dir + "/docker-compose.django.yml --profile modernization"
+django_compose := compose + " -f " + repo_dir + "/docker-compose.django.yml"
 production_compose := compose + " -f " + repo_dir + "/docker-compose.django-service.yml"
 django_image := "bugaga-django:test"
 docker_hub_repository := "sirbigg/bugaga"
@@ -150,14 +150,10 @@ production-workers-logs:
 production-workers-active:
     {{ production_compose }} exec celery-worker celery -A config inspect active
 
-# Run the legacy unittest suite in its existing container image.
-legacy-test:
-    {{ compose }} run --rm admin python -m unittest discover . "test_*.py"
-
 # Export the current PostgreSQL schema without table data.
 schema-dump output="bugaga-schema.sql":
     {{ compose }} exec -T db sh -c 'pg_dump --username="$POSTGRES_USER" --dbname="$POSTGRES_DB" --schema-only --no-owner --no-privileges' > "{{ output }}"
 
-# Create a private custom-format PostgreSQL backup before cutover.
+# Create a private custom-format PostgreSQL backup before high-risk maintenance.
 backup output="bugaga-production.dump":
     {{ compose }} exec -T db sh -c 'pg_dump --username="$POSTGRES_USER" --dbname="$POSTGRES_DB" --format=custom --no-owner --no-privileges' > "{{ output }}"

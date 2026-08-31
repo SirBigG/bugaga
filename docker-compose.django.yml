@@ -7,7 +7,6 @@ services:
       retries: 10
 
   django:
-    profiles: ["modernization"]
     image: ${BUGAGA_DJANGO_IMAGE:-sirbigg/bugaga:django-latest}
     build:
       context: .
@@ -32,7 +31,6 @@ services:
     restart: unless-stopped
 
   redis:
-    profiles: ["modernization"]
     image: redis:7.4-alpine
     command: ["redis-server", "--appendonly", "yes", "--maxmemory", "64mb", "--maxmemory-policy", "noeviction"]
     volumes:
@@ -45,7 +43,6 @@ services:
     restart: unless-stopped
 
   celery-worker:
-    profiles: ["modernization"]
     image: ${BUGAGA_DJANGO_IMAGE:-sirbigg/bugaga:django-latest}
     build:
       context: .
@@ -66,7 +63,6 @@ services:
     restart: unless-stopped
 
   celery-beat:
-    profiles: ["modernization"]
     image: ${BUGAGA_DJANGO_IMAGE:-sirbigg/bugaga:django-latest}
     build:
       context: .

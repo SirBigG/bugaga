@@ -1,1 +1,0 @@
-from .stemmer_uk import UkrainianStemmer

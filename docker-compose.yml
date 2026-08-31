@@ -1,17 +1,4 @@
 services:
-  admin:
-    build: .
-    # restart: always
-    command: sh -c "/web/bin/run.sh"
-    volumes:
-      - .:/web
-    env_file:
-      - project.env
-    links:
-      - db
-    ports:
-      - 8181:8181
-
   db:
     image: postgres:16.0-alpine
     volumes:

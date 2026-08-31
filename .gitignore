@@ -3,10 +3,6 @@
 __pycache__
 .DS_Store
 ._DS_Store
-settings_local.py
-server.pid
-nohup.out
-env/
 .idea/
 db.sqlite3
 .venv/
