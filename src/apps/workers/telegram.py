@@ -6,7 +6,11 @@ logger = logging.getLogger(__name__)
 
 
 class TelegramAPIError(RuntimeError):
-    pass
+    def __init__(self, method, error_code, description):
+        self.method = method
+        self.error_code = error_code
+        self.description = description
+        super().__init__(f"Telegram {method} failed ({error_code}): {description}")
 
 
 class TelegramClient:
@@ -23,10 +27,18 @@ class TelegramClient:
             json=payload,
             timeout=timeout or self.request_timeout,
         )
-        response.raise_for_status()
-        body = response.json()
+        try:
+            body = response.json()
+        except requests.exceptions.JSONDecodeError:
+            response.raise_for_status()
+            raise TelegramAPIError(method, response.status_code, "invalid JSON response") from None
         if not body.get("ok"):
-            raise TelegramAPIError(f"Telegram {method} failed: {body.get('description', 'unknown error')}")
+            raise TelegramAPIError(
+                method,
+                body.get("error_code", response.status_code),
+                body.get("description", "unknown error"),
+            )
+        response.raise_for_status()
         return body.get("result")
 
     def get_updates(self, *, offset=None, timeout=30):

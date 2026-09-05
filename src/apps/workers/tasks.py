@@ -12,7 +12,7 @@ from .ingestion import classify_adverts, parse_advert_links, parse_adverts, pars
 from .locks import advisory_lock
 from .models import WorkerState
 from .summary import create_daily_summary
-from .telegram import TelegramClient
+from .telegram import TelegramAPIError, TelegramClient
 
 logger = logging.getLogger(__name__)
 
@@ -64,11 +64,30 @@ def notify_subscribers(client):
     text = _notification_text()
     sent = 0
     for user in TelegramUser.objects.filter(is_subscribed=True).iterator():
-        try:
-            client.send_text(user.telegram_key, text)
-            sent += 1
-        except Exception:
-            logger.exception("Could not send Telegram news to user %s", user.pk)
+        with transaction.atomic():
+            user = (
+                TelegramUser.objects.select_for_update()
+                .filter(pk=user.pk, is_subscribed=True)
+                .first()
+            )
+            if user is None:
+                continue
+            try:
+                client.send_text(user.telegram_key, text)
+                sent += 1
+            except TelegramAPIError as error:
+                if error.error_code == 403:
+                    user.is_subscribed = False
+                    user.save(update_fields=("is_subscribed",))
+                    logger.info(
+                        "Deactivated Telegram subscriber %s after Telegram rejected delivery: %s",
+                        user.pk,
+                        error.description,
+                    )
+                else:
+                    logger.exception("Could not send Telegram news to user %s", user.pk)
+            except Exception:
+                logger.exception("Could not send Telegram news to user %s", user.pk)
     return sent
 
 

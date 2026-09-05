@@ -17,7 +17,8 @@ from apps.legacy.models import Category, News, ParsedItem, TelegramUser
 from apps.workers.bot import START_RESPONSE, handle_update
 from apps.workers.models import WorkerState
 from apps.workers.summary import create_daily_summary
-from apps.workers.tasks import poll_telegram, run_pipeline
+from apps.workers.tasks import notify_subscribers, poll_telegram, run_pipeline
+from apps.workers.telegram import TelegramAPIError, TelegramClient
 
 LEGACY_WORKER_TEST_MODELS = (Category, TelegramUser, ParsedItem, News)
 
@@ -64,6 +65,78 @@ def test_start_command_subscribes_user_and_preserves_legacy_response():
     assert handled is True
     assert TelegramUser.objects.get(telegram_key="12345").is_subscribed is True
     assert client.sent == [("12345", START_RESPONSE, "HTML")]
+
+
+@pytest.mark.django_db
+def test_forbidden_subscriber_is_deactivated_and_start_reactivates_them():
+    user = TelegramUser.objects.create(
+        telegram_key="12345",
+        date_joined=timezone.now(),
+        is_subscribed=True,
+        is_admin=False,
+    )
+    ParsedItem.objects.create(
+        data=json.dumps({"title": "Новина"}),
+        hash="blocked-subscriber-news",
+        created=timezone.now(),
+    )
+    client = FakeTelegramClient("token")
+    client.send_text = lambda *args, **kwargs: (_ for _ in ()).throw(
+        TelegramAPIError("sendMessage", 403, "Forbidden: bot was blocked by the user")
+    )
+
+    assert notify_subscribers(client) == 0
+    user.refresh_from_db()
+    assert user.is_subscribed is False
+
+    skipped_client = FakeTelegramClient("token")
+    assert notify_subscribers(skipped_client) == 0
+    assert skipped_client.sent == []
+
+    start_client = FakeTelegramClient("token")
+    assert handle_update(
+        {"update_id": 2, "message": {"text": "/start", "chat": {"id": 12345}}},
+        start_client,
+    ) is True
+    user.refresh_from_db()
+    assert user.is_subscribed is True
+
+
+@pytest.mark.django_db
+def test_non_forbidden_telegram_error_does_not_deactivate_subscriber():
+    user = TelegramUser.objects.create(
+        telegram_key="67890",
+        date_joined=timezone.now(),
+        is_subscribed=True,
+        is_admin=False,
+    )
+    client = FakeTelegramClient("token")
+    client.send_text = lambda *args, **kwargs: (_ for _ in ()).throw(
+        TelegramAPIError("sendMessage", 429, "Too Many Requests")
+    )
+
+    assert notify_subscribers(client) == 0
+    user.refresh_from_db()
+    assert user.is_subscribed is True
+
+
+def test_telegram_client_exposes_api_error_code():
+    response = SimpleNamespace(
+        status_code=403,
+        json=lambda: {
+            "ok": False,
+            "error_code": 403,
+            "description": "Forbidden: bot was blocked by the user",
+        },
+    )
+    session = SimpleNamespace(post=lambda *args, **kwargs: response)
+    client = TelegramClient("token", session=session)
+
+    with pytest.raises(TelegramAPIError) as raised:
+        client.send_text("12345", "Новина")
+
+    assert raised.value.error_code == 403
+    assert raised.value.description == "Forbidden: bot was blocked by the user"
 
 
 @pytest.mark.django_db
